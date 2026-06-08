@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+*.pptx
+*.docx
+*.pdf
+dashboard_aridos.py
+dashboard_aridos_prime.py
+dashboard_aridos_prime_v2.py
+dashboard_aridos_v1.py
+dashboard_aridos_v3.py
+dashboard_aridos_v4.py
