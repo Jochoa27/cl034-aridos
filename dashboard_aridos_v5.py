@@ -12,8 +12,27 @@ import json
 from datetime import datetime
 from streamlit.components.v1 import html as st_html
 
+def _detectar_proyecto() -> tuple[Path, dict]:
+    ROOT = Path(__file__).parent / "proyectos"
+    codigo = st.query_params.get("proyecto", "")
+    carpeta = None
+    if codigo and ROOT.exists():
+        matches = [d for d in ROOT.iterdir() if d.is_dir() and d.name.startswith(codigo)]
+        carpeta = matches[0] if matches else None
+    if carpeta is None and ROOT.exists():
+        projs = sorted(d for d in ROOT.iterdir() if d.is_dir() and (d / "proyecto.json").exists())
+        carpeta = projs[0] if projs else None
+    if carpeta and (carpeta / "proyecto.json").exists():
+        cfg = json.loads((carpeta / "proyecto.json").read_text(encoding="utf-8"))
+        return carpeta, cfg
+    return Path(__file__).parent, {"codigo": "", "nombre": "", "archivo_ppto": "Ppto.xlsx"}
+
+_CARPETA_PROYECTO, _CFG = _detectar_proyecto()
+PROYECTO_CODIGO = _CFG.get("codigo", "")
+PROYECTO_NOMBRE = _CFG.get("nombre", "")
+
 st.set_page_config(
-    page_title="Control Áridos — Constructora Londres",
+    page_title=f"Control Áridos {PROYECTO_CODIGO} — Constructora Londres",
     page_icon="🏗️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -76,8 +95,42 @@ section[data-testid="stMain"] [data-testid="stButton"] > button[data-testid="bas
 .mk-vl { font-size:1.28rem; font-weight:800; color:#F1F5F9; line-height:1; }
 .mk-sb { font-size:0.67rem; color:#475569; margin-top:2px; }
 .risk-cap { font-size:0.78rem; color:#64748B; line-height:1.55; background:rgba(255,255,255,0.018); border:1px solid rgba(255,255,255,0.050); border-radius:10px; padding:10px 14px; margin-bottom:10px; }
+.proj-card { background:rgba(255,255,255,0.030); border:1px solid rgba(84,112,198,0.25); border-radius:16px; padding:24px 22px; text-align:center; margin-bottom:12px; transition:border-color .2s; }
+.proj-card:hover { border-color:rgba(84,112,198,0.55); }
 </style>
 """, unsafe_allow_html=True)
+
+# ── SELECTOR MULTI-PROYECTO ───────────────────────────────────────────────────
+_PROJS_ROOT = Path(__file__).parent / "proyectos"
+_TODOS_PROJS = (
+    sorted(d for d in _PROJS_ROOT.iterdir()
+           if d.is_dir() and (d / "proyecto.json").exists())
+    if _PROJS_ROOT.exists() else []
+)
+if len(_TODOS_PROJS) > 1 and not st.query_params.get("proyecto", ""):
+    st.markdown("""
+    <div style="text-align:center;padding:40px 0 20px;">
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:#5470c6;margin-bottom:8px;">CONSTRUCTORA LONDRES</div>
+      <div style="font-size:2.2rem;font-weight:900;color:#F8FAFC;">🏗️ CONTROL DE ÁRIDOS</div>
+      <div style="font-size:0.92rem;color:#475569;margin-top:8px;">Selecciona un proyecto</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.divider()
+    _cols = st.columns(min(len(_TODOS_PROJS), 3), gap="large")
+    for _i, _d in enumerate(_TODOS_PROJS):
+        _c = json.loads((_d / "proyecto.json").read_text(encoding="utf-8"))
+        _n_xlsx = sum(1 for _ in _d.glob("*.xlsx"))
+        with _cols[_i % 3]:
+            st.markdown(f"""<div class="proj-card">
+              <div style="font-size:0.60rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5470c6;margin-bottom:6px;">OBRA</div>
+              <div style="font-size:1.55rem;font-weight:900;color:#F8FAFC;margin-bottom:4px;">{_c.get("codigo","")}</div>
+              <div style="font-size:0.88rem;color:#94A3B8;margin-bottom:12px;">{_c.get("nombre","")}</div>
+              <div style="font-size:0.70rem;color:#334155;">{_n_xlsx} archivos de datos</div>
+            </div>""", unsafe_allow_html=True)
+            if st.button("Ver dashboard →", key=f"_sel_{_c.get('codigo','')}", use_container_width=True):
+                st.query_params["proyecto"] = _c.get("codigo", "")
+                st.rerun()
+    st.stop()
 
 # ── ECHARTS ──────────────────────────────────────────────────────────────────
 _EC_CDN = "https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"
@@ -108,8 +161,8 @@ PALETA_CC  = ["#5470c6","#fc8452","#73c0de","#91cc75","#fac858",
               "#9a60b4","#ee6666","#38BDF8","#3ba272","#ea7ccc","#2DD4BF"]
 
 # ── CONSTANTES ────────────────────────────────────────────────────────────────
-CARPETA        = Path(__file__).parent
-ARCHIVO_PPTO   = CARPETA / "P_H_J_VENTURELLI_Ppto Disponible para cuadro de costos.xlsx"
+CARPETA        = _CARPETA_PROYECTO
+ARCHIVO_PPTO   = CARPETA / _CFG["archivo_ppto"]
 ARCHIVO_OC     = CARPETA / "Descarga_IConstruye.xlsx"
 ARCHIVO_RECFAC = CARPETA / "Recepcion_Facturación_OC.xlsx"
 INTERVALO      = 60
@@ -337,11 +390,11 @@ except FileNotFoundError:
 
 # ── SIDEBAR ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("""
+    st.markdown(f"""
     <div style="padding:4px 0 12px;">
       <div style="font-size:0.58rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5470c6;margin-bottom:3px;">CONSTRUCTORA LONDRES</div>
       <div style="font-size:1.05rem;font-weight:800;color:#F1F5F9;letter-spacing:0.02em;">🏗️ CONTROL DE ÁRIDOS</div>
-      <div style="font-size:0.75rem;font-weight:600;color:#475569;letter-spacing:0.04em;margin-top:3px;">CL034 — José Venturelli</div>
+      <div style="font-size:0.75rem;font-weight:600;color:#475569;letter-spacing:0.04em;margin-top:3px;">{PROYECTO_CODIGO} — {PROYECTO_NOMBRE}</div>
     </div>
     """, unsafe_allow_html=True)
     st.divider()
@@ -442,7 +495,7 @@ st.markdown(f"""
     <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5470c6;">CONSTRUCTORA LONDRES</div>
     <div style="font-size:1.55rem;font-weight:900;color:#F8FAFC;letter-spacing:0.02em;">🏗️ CONTROL DE ÁRIDOS</div>
   </div>
-  <div style="font-size:0.82rem;font-weight:600;color:#334155;letter-spacing:0.05em;">CL034 — José Venturelli</div>
+  <div style="font-size:0.82rem;font-weight:600;color:#334155;letter-spacing:0.05em;">{PROYECTO_CODIGO} — {PROYECTO_NOMBRE}</div>
   <div style="margin-left:auto;font-size:0.69rem;color:#1E293B;background:rgba(255,255,255,0.03);
               border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:3px 10px;letter-spacing:0.04em;">
     DATOS AL {datetime.fromtimestamp(max(mtime_ppto,mtime_oc)).strftime("%d/%m/%Y %H:%M")}
