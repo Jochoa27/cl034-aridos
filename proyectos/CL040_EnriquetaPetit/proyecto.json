@@ -1,0 +1,6 @@
+{
+  "codigo": "CL040",
+  "nombre": "Enriqueta Petit",
+  "archivo_ppto": "Ppto_APU.xlsx",
+  "excluir_ccs": ["A04", "E06"]
+}

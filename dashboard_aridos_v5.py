@@ -168,31 +168,44 @@ ARCHIVO_RECFAC = CARPETA / "Recepcion_Facturación_OC.xlsx"
 INTERVALO      = 60
 
 PALABRAS_ARIDOS = ["arena","grava","bolón","bolon","integral",
-                   "base estabilizada","ripio","gravilla","polvo de piedra"]
+                   "base estabilizada","ripio","gravilla","polvo de piedra",
+                   "tierra","maicillo"]
 MAPA_NOMBRES = {
     "grava chancada 1.1/2''":                     'Grava Chancada 1½"',
     'grava chancada 1.1/2"':                      'Grava Chancada 1½"',
+    "grava chancada":                             "Grava Chancada",
     "arena gruesa":                               "Arena Gruesa",
     "arena fina":                                 "Arena Fina",
+    "arena de relleno":                           "Arena de Relleno",
     "base estabilizada chancada 1 ½\" cbr >100%": "Base Estabilizada",
     "base estabilizada cbr >20%":                 "Base Estabilizada",
     "base estabilizada":                          "Base Estabilizada",
     "bolón de 6\" a 10\"":                        'Bolón 6"-10"',
+    "bolón":                                      "Bolón",
+    "bolon":                                      "Bolón",
     "integral bajo 2":                            'Integral Bajo 2"',
     "integral bajo 3":                            'Integral Bajo 3"',
+    "integral bajo 4":                            'Integral Bajo 4"',
     "integral":                                   "Integral",
     "cama de ripio":                              "Ripio (Cama)",
+    "maicillo":                                   "Maicillo",
+    "tierra / material":                          "Tierra / Mat. Excavación",
+    "tierra para relleno":                        "Tierra para Relleno",
+    "tierra":                                     "Tierra",
 }
 
 # ── HELPERS ───────────────────────────────────────────────────────────────────
+def _limpiar(s):
+    return str(s).strip().lower().replace('\xa0', ' ').replace(' ', ' ')
+
 def normalizar(nombre):
-    n = str(nombre).strip().lower()
+    n = _limpiar(nombre)
     for k, v in MAPA_NOMBRES.items():
         if k in n: return v
     return str(nombre).strip().title()
 
 def es_arido(texto):
-    return any(p in str(texto).lower() for p in PALABRAS_ARIDOS)
+    return any(p in _limpiar(texto) for p in PALABRAS_ARIDOS)
 
 def semaforo(desv, umbral):
     if pd.isna(desv): return "⚪"
@@ -311,13 +324,14 @@ def cargar_presupuesto(mtime):
     df = pd.read_excel(ARCHIVO_PPTO, sheet_name="APU_PPTO", header=None, skiprows=3, names=cols)
     df = df.dropna(subset=["Descripcion"])
     df = df[df["Tipo"].astype(str).str.strip() == "Material"].copy()
+    df = df[df["Ud"].astype(str).str.upper().str.strip() == "M3"].copy()
     df = df[df["Descripcion"].astype(str).apply(es_arido)].copy()
     df["Material"] = df["Descripcion"].astype(str).apply(normalizar)
     df["CC"]       = df["CC"].astype(str).str.strip()
     df["Cantidad"] = pd.to_numeric(df["Cantidad"], errors="coerce").fillna(0)
     df["PU"]       = pd.to_numeric(df["PU"],       errors="coerce").fillna(0)
     df["Total"]    = pd.to_numeric(df["Total"],     errors="coerce").fillna(0)
-    df = df[df["CC"].str.match(r"^[A-Z]\d+$", na=False)]
+    df = df[df["CC"].str.match(r"^[A-Z]\d+(\.\d+)?$", na=False)]
     return df
 
 @st.cache_data
@@ -325,7 +339,7 @@ def cargar_cc_nombres(mtime):
     df = pd.read_excel(ARCHIVO_PPTO, sheet_name="Nombre_Cuenta_Costo")
     df = df.iloc[:, :2].copy(); df.columns = ["CC","Nombre"]
     df["CC"] = df["CC"].astype(str).str.strip()
-    df = df[df["CC"].str.match(r"^[A-Z]\d+$", na=False)]
+    df = df[df["CC"].str.match(r"^[A-Z]\d+(\.\d+)?$", na=False)]
     return dict(zip(df["CC"], df["Nombre"].astype(str).str.strip()))
 
 @st.cache_data
