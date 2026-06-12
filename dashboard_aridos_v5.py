@@ -493,6 +493,22 @@ with st.sidebar:
     if st.button("🔄 Actualizar datos", use_container_width=True):
         st.cache_data.clear(); st.rerun()
     st.markdown(f'<div style="font-size:0.68rem;color:#1E293B;margin-top:6px;">⏱ Refresco cada {INTERVALO}s</div>', unsafe_allow_html=True)
+    if len(_TODOS_PROJS) > 1:
+        st.divider()
+        st.markdown('<div style="font-size:0.65rem;font-weight:700;letter-spacing:0.13em;color:#475569;text-transform:uppercase;margin-bottom:8px;">🏗️ CAMBIAR PROYECTO</div>', unsafe_allow_html=True)
+        _projs_info = []
+        for _d in _TODOS_PROJS:
+            _c = json.loads((_d / "proyecto.json").read_text(encoding="utf-8"))
+            _projs_info.append(_c)
+        _proj_labels = [f"{p.get('codigo','')} — {p.get('nombre','')}" for p in _projs_info]
+        _current_idx = next((i for i, p in enumerate(_projs_info) if p.get("codigo","") == PROYECTO_CODIGO), 0)
+        _sel_idx = st.selectbox("", options=range(len(_projs_info)),
+                                format_func=lambda i: _proj_labels[i],
+                                index=_current_idx, key="proj_switch",
+                                label_visibility="collapsed")
+        if _sel_idx != _current_idx:
+            st.query_params["proyecto"] = _projs_info[_sel_idx].get("codigo", "")
+            st.rerun()
 
 # ── DATOS FILTRADOS ───────────────────────────────────────────────────────────
 df_ppto_f = df_ppto[df_ppto["CC"].isin(sel_cc) & df_ppto["Material"].isin(sel_mat)]
