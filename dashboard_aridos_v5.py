@@ -52,62 +52,61 @@ h2 { font-size:0.80rem !important; font-weight:700 !important; letter-spacing:0.
 h3 { font-size:0.78rem !important; font-weight:700 !important; letter-spacing:0.09em !important; text-transform:uppercase !important; color:#334155 !important; margin-top:0.8rem !important; }
 h5 { font-size:0.78rem !important; font-weight:700 !important; letter-spacing:0.08em !important; text-transform:uppercase !important; color:#64748B !important; }
 [data-testid="metric-container"] { background:rgba(255,255,255,0.030) !important; border:1px solid rgba(255,255,255,0.070) !important; border-radius:14px !important; padding:16px 18px !important; transition: border-color .2s, box-shadow .2s !important; }
-[data-testid="metric-container"]:hover { border-color:rgba(59,130,246,0.28) !important; box-shadow:0 4px 20px rgba(59,130,246,0.07) !important; }
+[data-testid="metric-container"]:hover { border-color:rgba(56,189,248,0.30) !important; box-shadow:0 4px 20px rgba(56,189,248,0.10) !important; }
 [data-testid="stMetricValue"]  { font-size:1.55rem !important; font-weight:800 !important; color:#F1F5F9 !important; }
 [data-testid="stMetricLabel"]  { font-size:0.65rem !important; font-weight:700 !important; letter-spacing:0.10em !important; text-transform:uppercase !important; color:#475569 !important; }
 [data-testid="stMetricDelta"]  { font-size:0.74rem !important; font-weight:600 !important; }
 [data-testid="stTabs"] > div:first-child { border-bottom:1px solid rgba(255,255,255,0.07) !important; }
 button[data-baseweb="tab"] { font-size:0.82rem !important; font-weight:600 !important; letter-spacing:0.04em !important; color:#64748B !important; padding:8px 16px !important; }
-button[data-baseweb="tab"][aria-selected="true"] { color:#5470c6 !important; font-weight:700 !important; }
+button[data-baseweb="tab"][aria-selected="true"] { color:#38BDF8 !important; font-weight:700 !important; }
 hr { border:none !important; border-top:1px solid rgba(255,255,255,0.065) !important; margin:1.2rem 0 !important; }
 [data-testid="stDataFrame"] { border:1px solid rgba(255,255,255,0.07) !important; border-radius:12px !important; overflow:hidden !important; }
-[data-testid="stPopover"] > button { background:rgba(255,255,255,0.035) !important; border:1px solid rgba(255,255,255,0.09) !important; border-radius:8px !important; color:#94A3B8 !important; font-size:0.83rem !important; font-weight:500 !important; }
-[data-testid="stPopover"] > button:hover { border-color:rgba(84,112,198,0.30) !important; background:rgba(84,112,198,0.055) !important; }
+[data-testid="stPopover"] > button { background:rgba(56,189,248,0.04) !important; border:1px solid rgba(56,189,248,0.15) !important; border-radius:8px !important; color:#94A3B8 !important; font-size:0.83rem !important; font-weight:500 !important; }
+[data-testid="stPopover"] > button:hover { border-color:rgba(56,189,248,0.35) !important; background:rgba(56,189,248,0.09) !important; }
 div[data-testid="stCheckbox"] label { font-size:0.82rem !important; padding-top:1px !important; padding-bottom:1px !important; }
 div[data-testid="stCheckbox"] { margin-bottom:-4px !important; }
 div[data-testid="stTextInput"] input { font-size:0.83rem !important; }
 section[data-testid="stMain"] [data-testid="stButton"] > button { height:auto !important; min-height:78px !important; white-space:pre-line !important; text-align:center !important; line-height:1.65 !important; padding:12px 10px !important; font-size:0.80rem !important; font-weight:600 !important; letter-spacing:0.03em !important; background:rgba(255,255,255,0.030) !important; border:1px solid rgba(255,255,255,0.072) !important; border-radius:14px !important; color:#94A3B8 !important; transition:all .2s !important; }
-section[data-testid="stMain"] [data-testid="stButton"] > button:hover { border-color:rgba(84,112,198,0.30) !important; background:rgba(84,112,198,0.06) !important; color:#CBD5E1 !important; }
-section[data-testid="stMain"] [data-testid="stButton"] > button[data-testid="baseButton-primary"] { background:rgba(84,112,198,0.14) !important; border:1.5px solid #5470c6 !important; color:#93C5FD !important; box-shadow:0 0 20px rgba(84,112,198,0.14) !important; }
+section[data-testid="stMain"] [data-testid="stButton"] > button:hover { border-color:rgba(56,189,248,0.35) !important; background:rgba(56,189,248,0.07) !important; color:#E2E8F0 !important; }
+section[data-testid="stMain"] [data-testid="stButton"] > button[data-testid="baseButton-primary"] { background:rgba(56,189,248,0.14) !important; border:1.5px solid #38BDF8 !important; color:#BAE6FD !important; box-shadow:0 0 22px rgba(56,189,248,0.20) !important; }
 .stat-wrap { border-radius:18px; padding:22px 24px; text-align:center; }
-.stat-critico { background:linear-gradient(135deg,rgba(238,102,102,0.18),rgba(238,102,102,0.05)); border:1.5px solid rgba(238,102,102,0.48); box-shadow:0 0 50px rgba(238,102,102,0.16), inset 0 0 30px rgba(238,102,102,0.04); }
-.stat-riesgo  { background:linear-gradient(135deg,rgba(250,200,88,0.18),rgba(250,200,88,0.05));  border:1.5px solid rgba(250,200,88,0.48);  box-shadow:0 0 50px rgba(250,200,88,0.16),  inset 0 0 30px rgba(250,200,88,0.04); }
-.stat-normal  { background:linear-gradient(135deg,rgba(145,204,117,0.18),rgba(145,204,117,0.05)); border:1.5px solid rgba(145,204,117,0.48); box-shadow:0 0 50px rgba(145,204,117,0.16), inset 0 0 30px rgba(145,204,117,0.04); }
+.stat-critico { background:linear-gradient(135deg,rgba(255,71,87,0.20),rgba(255,71,87,0.04)); border:1.5px solid rgba(255,71,87,0.55); box-shadow:0 0 60px rgba(255,71,87,0.22), inset 0 0 30px rgba(255,71,87,0.06); }
+.stat-riesgo  { background:linear-gradient(135deg,rgba(255,179,0,0.20),rgba(255,179,0,0.04));   border:1.5px solid rgba(255,179,0,0.55);  box-shadow:0 0 60px rgba(255,179,0,0.22),  inset 0 0 30px rgba(255,179,0,0.06); }
+.stat-normal  { background:linear-gradient(135deg,rgba(35,209,96,0.20),rgba(35,209,96,0.04));   border:1.5px solid rgba(35,209,96,0.55);  box-shadow:0 0 60px rgba(35,209,96,0.22),  inset 0 0 30px rgba(35,209,96,0.06); }
 .stat-lbl { font-size:0.60rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:rgba(255,255,255,0.40); margin-bottom:10px; }
 .stat-val { font-size:2.9rem; font-weight:900; line-height:1.0; margin-bottom:8px; letter-spacing:0.04em; }
 .stat-sub { font-size:0.75rem; color:rgba(255,255,255,0.58); line-height:1.45; }
 .kpi-g { display:grid; gap:10px; }
-.kpi-c { background:rgba(255,255,255,0.030); border:1px solid rgba(255,255,255,0.072); border-radius:14px; padding:16px 16px 12px; text-align:center; transition:border-color .2s, box-shadow .2s; }
-.kpi-c:hover { border-color:rgba(84,112,198,0.28); box-shadow:0 4px 18px rgba(84,112,198,0.07); }
+.kpi-c { background:linear-gradient(135deg,rgba(56,189,248,0.07),rgba(56,189,248,0.02)); border:1px solid rgba(56,189,248,0.16); border-radius:14px; padding:16px 16px 12px; text-align:center; transition:border-color .2s, box-shadow .2s; }
+.kpi-c:hover { border-color:rgba(56,189,248,0.38); box-shadow:0 4px 22px rgba(56,189,248,0.12); }
 .kpi-lb { font-size:0.60rem; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#475569; margin-bottom:7px; }
 .kpi-vl { font-size:1.75rem; font-weight:800; color:#F1F5F9; line-height:1.0; margin-bottom:5px; font-variant-numeric:tabular-nums; }
 .kpi-vls { font-size:1.42rem; font-weight:800; color:#F1F5F9; line-height:1.0; margin-bottom:5px; font-variant-numeric:tabular-nums; }
-.dp { font-size:0.73rem; font-weight:600; color:#91cc75; }
-.dn { font-size:0.73rem; font-weight:600; color:#ee6666; }
+.dp { font-size:0.73rem; font-weight:600; color:#23D160; }
+.dn { font-size:0.73rem; font-weight:600; color:#FF4757; }
 .d0 { font-size:0.73rem; font-weight:600; color:#475569; }
 .row-lbl { font-size:0.68rem; font-weight:800; letter-spacing:0.10em; text-transform:uppercase; color:#64748B; margin-bottom:7px; }
-.sh { display:flex; align-items:center; gap:12px; margin:1.8rem 0 0.5rem; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.060); }
-.sh-bar { width:3px; height:20px; border-radius:2px; flex-shrink:0; }
-.sh-txt { font-size:0.79rem; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#94A3B8; }
-.sh-badge { margin-left:auto; font-size:0.64rem; font-weight:700; letter-spacing:0.06em; padding:2px 10px; border-radius:20px; }
-.mk { background:rgba(255,255,255,0.024); border:1px solid rgba(255,255,255,0.060); border-radius:10px; padding:12px 14px; }
-.mk-lb { font-size:0.57rem; font-weight:700; letter-spacing:0.11em; text-transform:uppercase; color:#475569; margin-bottom:4px; }
+.sh { display:flex; align-items:center; gap:12px; margin:1.8rem 0 0.5rem; padding-bottom:10px; border-bottom:1px solid rgba(56,189,248,0.12); }
+.sh-bar { width:4px; height:22px; border-radius:2px; flex-shrink:0; }
+.sh-txt { font-size:0.79rem; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; color:#CBD5E1; text-shadow:0 0 18px rgba(56,189,248,0.25); }
+.sh-badge { margin-left:auto; font-size:0.64rem; font-weight:700; letter-spacing:0.06em; padding:3px 12px; border-radius:20px; border:1px solid rgba(56,189,248,0.25); }
+.mk { background:linear-gradient(135deg,rgba(56,189,248,0.07),rgba(56,189,248,0.02)); border:1px solid rgba(56,189,248,0.18); border-radius:12px; padding:12px 14px; transition:border-color .2s,box-shadow .2s; }
+.mk-lb { font-size:0.57rem; font-weight:700; letter-spacing:0.11em; text-transform:uppercase; color:#64748B; margin-bottom:4px; }
 .mk-vl { font-size:1.28rem; font-weight:800; color:#F1F5F9; line-height:1; }
 .mk-sb { font-size:0.67rem; color:#475569; margin-top:2px; }
 .risk-cap { font-size:0.78rem; color:#64748B; line-height:1.55; background:rgba(255,255,255,0.018); border:1px solid rgba(255,255,255,0.050); border-radius:10px; padding:10px 14px; margin-bottom:10px; }
-.proj-card { background:rgba(255,255,255,0.030); border:1px solid rgba(84,112,198,0.25); border-radius:16px; padding:24px 22px; text-align:center; margin-bottom:12px; transition:border-color .2s; }
-.proj-card:hover { border-color:rgba(84,112,198,0.55); }
+.proj-card { background:linear-gradient(135deg,rgba(56,189,248,0.07),rgba(56,189,248,0.01)); border:1px solid rgba(56,189,248,0.22); border-radius:16px; padding:24px 22px; text-align:center; margin-bottom:12px; transition:border-color .2s,box-shadow .2s; }
+.proj-card:hover { border-color:rgba(56,189,248,0.55); box-shadow:0 0 28px rgba(56,189,248,0.12); }
 /* ── PROGRESS RINGS ─────────────────────────────────────────────────────── */
 @keyframes ring-draw { from { stroke-dashoffset: 226.2; } }
-.ring-wrap { display:flex; flex-direction:column; align-items:center; gap:5px; padding:18px 8px 14px; background:rgba(255,255,255,0.028); border:1px solid rgba(255,255,255,0.068); border-radius:18px; transition:border-color .25s,box-shadow .25s; }
-.ring-wrap:hover { border-color:rgba(84,112,198,0.32); box-shadow:0 0 28px rgba(84,112,198,0.12); }
+.ring-wrap { display:flex; flex-direction:column; align-items:center; gap:5px; padding:18px 8px 14px; background:linear-gradient(135deg,rgba(56,189,248,0.06),rgba(56,189,248,0.01)); border:1px solid rgba(56,189,248,0.15); border-radius:18px; transition:border-color .25s,box-shadow .25s; }
+.ring-wrap:hover { border-color:rgba(56,189,248,0.40); box-shadow:0 0 32px rgba(56,189,248,0.15); }
 .ring-lbl { font-size:0.57rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:#475569; text-align:center; }
 .ring-val { font-size:1.22rem; font-weight:800; color:#F1F5F9; line-height:1; font-variant-numeric:tabular-nums; }
 .ring-sub { font-size:0.64rem; color:#475569; text-align:center; line-height:1.35; }
 circle.progress { animation: ring-draw 1.5s cubic-bezier(.4,0,.2,1) both; }
 /* ── ENHANCED KPIS ──────────────────────────────────────────────────────── */
-.kpi-c:hover { border-color:rgba(84,112,198,0.32); box-shadow:0 0 28px rgba(84,112,198,0.10); }
-.mk:hover { border-color:rgba(84,112,198,0.22); box-shadow:0 0 18px rgba(84,112,198,0.07); }
+.mk:hover { border-color:rgba(56,189,248,0.32); box-shadow:0 0 22px rgba(56,189,248,0.12); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -133,7 +132,7 @@ if len(_TODOS_PROJS) > 1 and not st.query_params.get("proyecto", ""):
         _n_xlsx = sum(1 for _ in _d.glob("*.xlsx"))
         with _cols[_i % 3]:
             st.markdown(f"""<div class="proj-card">
-              <div style="font-size:0.60rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5470c6;margin-bottom:6px;">OBRA</div>
+              <div style="font-size:0.60rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#38BDF8;margin-bottom:6px;">OBRA</div>
               <div style="font-size:1.55rem;font-weight:900;color:#F8FAFC;margin-bottom:4px;">{_c.get("codigo","")}</div>
               <div style="font-size:0.88rem;color:#94A3B8;margin-bottom:12px;">{_c.get("nombre","")}</div>
               <div style="font-size:0.70rem;color:#334155;">{_n_xlsx} archivos de datos</div>
@@ -165,9 +164,9 @@ def ec_html(js_option: str, height: int = 420) -> None:
 C_PPTO     = "#5470c6"
 C_OC       = "#fc8452"
 C_RECIBIDO = "#73c0de"
-C_CRITICO  = "#ee6666"
-C_ALERTA   = "#fac858"
-C_OK       = "#91cc75"
+C_CRITICO  = "#FF4757"
+C_ALERTA   = "#FFB300"
+C_OK       = "#23D160"
 PALETA_CC  = ["#5470c6","#fc8452","#73c0de","#91cc75","#fac858",
               "#9a60b4","#ee6666","#38BDF8","#3ba272","#ea7ccc","#2DD4BF"]
 
@@ -302,12 +301,12 @@ def color_alerta_fac(val):
     return f"color:{C_CRITICO};font-weight:bold" if val == "FAC > REC" else ""
 
 # ── HTML HELPERS ──────────────────────────────────────────────────────────────
-def seccion(icon, titulo, color="#5470c6", badge_txt=None, badge_color=None):
+def seccion(icon, titulo, color="#38BDF8", badge_txt=None, badge_color=None):
     bc = badge_color or color
-    badge = (f'<span class="sh-badge" style="background:rgba(84,112,198,0.10);color:{bc};">'
+    badge = (f'<span class="sh-badge" style="background:rgba(56,189,248,0.10);color:{bc};">'
              f'{badge_txt}</span>') if badge_txt else ""
     st.markdown(
-        f'<div class="sh"><div class="sh-bar" style="background:linear-gradient(180deg,{color},{color}66);"></div>'
+        f'<div class="sh"><div class="sh-bar" style="background:linear-gradient(180deg,{color},{color}55);box-shadow:0 0 8px {color}88;"></div>'
         f'<div class="sh-txt">{icon} {titulo}</div>{badge}</div>',
         unsafe_allow_html=True)
 
@@ -475,7 +474,7 @@ except FileNotFoundError:
 with st.sidebar:
     st.markdown(f"""
     <div style="padding:4px 0 12px;">
-      <div style="font-size:0.58rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5470c6;margin-bottom:3px;">CONSTRUCTORA LONDRES</div>
+      <div style="font-size:0.58rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#38BDF8;margin-bottom:3px;">CONSTRUCTORA LONDRES</div>
       <div style="font-size:1.05rem;font-weight:800;color:#F1F5F9;letter-spacing:0.02em;">🏗️ CONTROL DE ÁRIDOS</div>
       <div style="font-size:0.75rem;font-weight:600;color:#475569;letter-spacing:0.04em;margin-top:3px;">{PROYECTO_CODIGO} — {PROYECTO_NOMBRE}</div>
     </div>
@@ -575,7 +574,7 @@ st.markdown(f"""
 <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:16px;padding-bottom:12px;
             border-bottom:1px solid rgba(255,255,255,0.07);">
   <div style="display:flex;flex-direction:column;gap:2px;">
-    <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5470c6;">CONSTRUCTORA LONDRES</div>
+    <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#38BDF8;">CONSTRUCTORA LONDRES</div>
     <div style="font-size:1.55rem;font-weight:900;color:#F8FAFC;letter-spacing:0.02em;">🏗️ CONTROL DE ÁRIDOS</div>
   </div>
   <div style="font-size:0.82rem;font-weight:600;color:#334155;letter-spacing:0.05em;">{PROYECTO_CODIGO} — {PROYECTO_NOMBRE}</div>
@@ -1051,11 +1050,12 @@ def _build_avance_charts(df_grp, label_col):
         opt = {
             "backgroundColor": "transparent",
             "animation": True, "animationDuration": 900, "animationEasing": "cubicOut",
-            "tooltip": {"trigger": "axis", "backgroundColor": "rgba(10,17,35,0.97)",
-                        "borderColor": "rgba(84,112,198,0.25)",
+            "tooltip": {"trigger": "axis", "backgroundColor": "rgba(6,11,21,0.97)",
+                        "borderColor": "rgba(56,189,248,0.25)",
+                        "borderRadius": 12,
                         "textStyle": {"color": "#F1F5F9", "fontSize": 11},
                         "axisPointer": {"type": "shadow",
-                                        "shadowStyle": {"color": "rgba(84,112,198,0.06)"}}},
+                                        "shadowStyle": {"color": "rgba(56,189,248,0.05)"}}},
             "toolbox": {"feature": {"saveAsImage": {"title": "Guardar"},
                                     "restore": {"title": "Restaurar"}},
                         "iconStyle": {"borderColor": "#475569"}, "right": 5, "top": 5},
@@ -1258,8 +1258,9 @@ else:
         opt_ev = {
             "backgroundColor": "transparent",
             "animation": True, "animationDuration": 900, "animationEasing": "cubicOut",
-            "tooltip": {"trigger": "axis", "backgroundColor": "rgba(10,17,35,0.97)",
-                        "borderColor": "rgba(255,255,255,0.10)",
+            "tooltip": {"trigger": "axis", "backgroundColor": "rgba(6,11,21,0.97)",
+                        "borderColor": "rgba(56,189,248,0.22)",
+                        "borderRadius": 12,
                         "textStyle": {"color": "#F1F5F9", "fontSize": 11},
                         "axisPointer": {"type": "shadow"}},
             "toolbox": {"feature": {"saveAsImage": {"title": "Guardar"},
@@ -1271,8 +1272,8 @@ else:
             "dataZoom": [
                 {"type": "inside"},
                 {"type": "slider", "height": 20, "bottom": 10,
-                 "fillerColor": "rgba(84,112,198,0.2)",
-                 "handleStyle": {"color": "#5470c6"}}
+                 "fillerColor": "rgba(56,189,248,0.18)",
+                 "handleStyle": {"color": "#38BDF8"}}
             ],
             "grid": {"top": 50, "bottom": 100, "left": 65, "right": 75},
             "xAxis": {"type": "category", "data": all_months,
