@@ -260,7 +260,10 @@ def filtro_checklist(label, opciones, key, fmt=None):
                                placeholder="🔍 Buscar...", label_visibility="collapsed")
         vis = [o for o in opciones if not buscar or buscar.lower() in disp(o).lower()]
         all_checked = all(st.session_state.get(f"_ck_{key}_{op}", True) for op in opciones)
-        st.session_state[f"_ck_{key}_all"] = all_checked
+        try:
+            st.session_state[f"_ck_{key}_all"] = all_checked
+        except Exception:
+            pass
         st.checkbox("(Seleccionar todo)", key=f"_ck_{key}_all", on_change=_sync_todos)
         with st.container(height=min(220, max(90, len(vis) * 28))):
             for op in vis:
@@ -1362,7 +1365,7 @@ with tab_recfac:
         elif _rsel == "sin_fac_apr":
             _rf_view = _rf[(_rf["N° Doc. Recepción"] > 0) & (_rf["N° Factura"] > 0) &
                            (~_rf["Estado Factura"].astype(str).str.strip().isin(_APROBADOS))].copy()
-        else: _rf_view = _rf
+        else: _rf_view = _rf.copy()
 
         _rk1,_rk2,_rk3 = st.columns(3)
         with _rk1:
