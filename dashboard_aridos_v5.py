@@ -649,6 +649,11 @@ st.markdown(f"""
     <div style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:5px 12px;font-size:0.67rem;color:#334155;">📅 {_fecha_str}</div>
   </div>
 </div>
+""", unsafe_allow_html=True)
+
+seccion("📊", "RESUMEN EJECUTIVO", color="#38BDF8")
+
+st.markdown(f"""
 <div style="display:grid;grid-template-columns:1fr 2.25fr;gap:18px;margin-bottom:18px;">
   <div style="background:linear-gradient(145deg,rgba({_hero_rgb},0.18) 0%,rgba({_hero_rgb},0.04) 100%);
               border:1.5px solid rgba({_hero_rgb},0.50);
