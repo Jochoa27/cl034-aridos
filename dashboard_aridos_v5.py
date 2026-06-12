@@ -97,6 +97,17 @@ section[data-testid="stMain"] [data-testid="stButton"] > button[data-testid="bas
 .risk-cap { font-size:0.78rem; color:#64748B; line-height:1.55; background:rgba(255,255,255,0.018); border:1px solid rgba(255,255,255,0.050); border-radius:10px; padding:10px 14px; margin-bottom:10px; }
 .proj-card { background:rgba(255,255,255,0.030); border:1px solid rgba(84,112,198,0.25); border-radius:16px; padding:24px 22px; text-align:center; margin-bottom:12px; transition:border-color .2s; }
 .proj-card:hover { border-color:rgba(84,112,198,0.55); }
+/* ── PROGRESS RINGS ─────────────────────────────────────────────────────── */
+@keyframes ring-draw { from { stroke-dashoffset: 226.2; } }
+.ring-wrap { display:flex; flex-direction:column; align-items:center; gap:5px; padding:18px 8px 14px; background:rgba(255,255,255,0.028); border:1px solid rgba(255,255,255,0.068); border-radius:18px; transition:border-color .25s,box-shadow .25s; }
+.ring-wrap:hover { border-color:rgba(84,112,198,0.32); box-shadow:0 0 28px rgba(84,112,198,0.12); }
+.ring-lbl { font-size:0.57rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:#475569; text-align:center; }
+.ring-val { font-size:1.22rem; font-weight:800; color:#F1F5F9; line-height:1; font-variant-numeric:tabular-nums; }
+.ring-sub { font-size:0.64rem; color:#475569; text-align:center; line-height:1.35; }
+circle.progress { animation: ring-draw 1.5s cubic-bezier(.4,0,.2,1) both; }
+/* ── ENHANCED KPIS ──────────────────────────────────────────────────────── */
+.kpi-c:hover { border-color:rgba(84,112,198,0.32); box-shadow:0 0 28px rgba(84,112,198,0.10); }
+.mk:hover { border-color:rgba(84,112,198,0.22); box-shadow:0 0 18px rgba(84,112,198,0.07); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -312,6 +323,35 @@ def mini_kpi(label, value, sub=None, color="#F1F5F9"):
     sub_html = f'<div class="mk-sb">{sub}</div>' if sub else ""
     return (f'<div class="mk"><div class="mk-lb">{label}</div>'
             f'<div class="mk-vl" style="color:{color};">{value}</div>{sub_html}</div>')
+
+def ring_kpi(label, pct, value_str, sub=None, color="#5470c6"):
+    """SVG animated progress ring KPI card."""
+    clamped = max(0.0, min(100.0, float(pct or 0)))
+    r = 36; cx = cy = 46; circ = 226.2
+    offset = circ * (1 - clamped / 100)
+    sub_html = f'<div class="ring-sub">{sub}</div>' if sub else ""
+    return (
+        f'<div class="ring-wrap">'
+        f'<div class="ring-lbl">{label}</div>'
+        f'<svg width="92" height="92" viewBox="0 0 92 92">'
+        f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="5.5"/>'
+        f'<circle class="progress" cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{color}"'
+        f' stroke-width="5.5" stroke-linecap="round"'
+        f' stroke-dasharray="{circ:.1f}" stroke-dashoffset="{offset:.1f}"'
+        f' transform="rotate(-90 {cx} {cy})"/>'
+        f'<text x="{cx}" y="{cy+5}" text-anchor="middle" font-size="12.5" font-weight="800"'
+        f' fill="{color}" font-family="system-ui,sans-serif">{clamped:.0f}%</text>'
+        f'</svg>'
+        f'<div class="ring-val" style="color:{color};">{value_str}</div>'
+        f'{sub_html}'
+        f'</div>'
+    )
+
+def ring_row(items, cols=4):
+    html = "".join(ring_kpi(*i) for i in items)
+    st.markdown(
+        f'<div class="kpi-g" style="grid-template-columns:repeat({cols},1fr);">{html}</div>',
+        unsafe_allow_html=True)
 
 # ── CARGA DE DATOS ────────────────────────────────────────────────────────────
 @st.cache_data
@@ -558,11 +598,29 @@ with _col_kpis:
     ])
 
 st.markdown('<div style="height:14px;"></div>', unsafe_allow_html=True)
-_mk1, _mk2, _mk3, _mk4 = st.columns(4)
-with _mk1: st.markdown(mini_kpi("OCs Abiertas",     str(n_activas),  "órdenes vigentes"), unsafe_allow_html=True)
-with _mk2: st.markdown(mini_kpi("Alertas Críticas", str(n_alertas),  "ítems sobre umbral", color=C_CRITICO if n_alertas > 0 else C_OK), unsafe_allow_html=True)
-with _mk3: st.markdown(mini_kpi("Compromiso Ppto",  f"{compromiso_pct:.1f}%".replace(".",","), "OC / Presupuesto"), unsafe_allow_html=True)
-with _mk4: st.markdown(mini_kpi("Sin Presupuesto",  str(n_sin_ppto), "CCs con gasto sin ppto", color=C_CRITICO if n_sin_ppto > 0 else C_OK), unsafe_allow_html=True)
+_n_res = max(len(resumen), 1)
+ring_row([
+    ("Compromiso Ppto",
+     min(compromiso_pct, 100),
+     f"{compromiso_pct:.1f}%".replace(".", ","),
+     "OC / Presupuesto",
+     C_CRITICO if compromiso_pct > 100 else C_ALERTA if compromiso_pct >= 95 else C_OK),
+    ("Ejecución Recep.",
+     min(ejec_pct, 100),
+     f"{ejec_pct:.1f}%".replace(".", ","),
+     "Recibido / OC efectivo",
+     "#38BDF8"),
+    ("Alertas Críticas",
+     n_alertas / _n_res * 100,
+     str(n_alertas),
+     "ítems sobre umbral",
+     C_CRITICO if n_alertas > 0 else C_OK),
+    ("Sin Presupuesto",
+     n_sin_ppto / _n_res * 100,
+     str(n_sin_ppto),
+     "CCs con gasto sin ppto",
+     C_CRITICO if n_sin_ppto > 0 else C_OK),
+])
 
 st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
 st.divider()
@@ -805,12 +863,23 @@ def _build_avance_charts(df_grp, label_col):
         p_d = [round(float(v), 2) for v in vals_ppto]
         o_d = [round(float(v), 2) for v in vals_oc]
         r_d = [round(float(v), 2) for v in vals_rec]
+        _grad_ppto = {"type": "linear", "x": 0, "y": 0, "x2": 1, "y2": 0,
+                      "colorStops": [{"offset": 0, "color": "rgba(84,112,198,0.55)"},
+                                     {"offset": 1, "color": "rgba(84,112,198,0.12)"}]}
+        _grad_oc   = {"type": "linear", "x": 0, "y": 0, "x2": 1, "y2": 0,
+                      "colorStops": [{"offset": 0, "color": "rgba(252,132,82,1.0)"},
+                                     {"offset": 1, "color": "rgba(252,195,82,0.85)"}]}
+        _grad_rec  = {"type": "linear", "x": 0, "y": 0, "x2": 1, "y2": 0,
+                      "colorStops": [{"offset": 0, "color": "rgba(56,189,248,0.98)"},
+                                     {"offset": 1, "color": "rgba(115,192,222,0.70)"}]}
         opt = {
-            "backgroundColor": "transparent", "animation": True,
-            "tooltip": {"trigger": "axis", "backgroundColor": "rgba(15,23,42,0.95)",
-                        "borderColor": "rgba(255,255,255,0.10)",
+            "backgroundColor": "transparent",
+            "animation": True, "animationDuration": 900, "animationEasing": "cubicOut",
+            "tooltip": {"trigger": "axis", "backgroundColor": "rgba(10,17,35,0.97)",
+                        "borderColor": "rgba(84,112,198,0.25)",
                         "textStyle": {"color": "#F1F5F9", "fontSize": 11},
-                        "axisPointer": {"type": "shadow"}},
+                        "axisPointer": {"type": "shadow",
+                                        "shadowStyle": {"color": "rgba(84,112,198,0.06)"}}},
             "toolbox": {"feature": {"saveAsImage": {"title": "Guardar"},
                                     "restore": {"title": "Restaurar"}},
                         "iconStyle": {"borderColor": "#475569"}, "right": 5, "top": 5},
@@ -821,7 +890,7 @@ def _build_avance_charts(df_grp, label_col):
             "xAxis": {"type": "value", "name": x_unit,
                       "nameTextStyle": {"color": "#64748B", "fontSize": 11},
                       "axisLine": {"lineStyle": {"color": "#1E293B"}},
-                      "splitLine": {"lineStyle": {"color": "rgba(255,255,255,0.055)"}},
+                      "splitLine": {"lineStyle": {"color": "rgba(255,255,255,0.045)"}},
                       "axisLabel": {"color": "#94A3B8"}},
             "yAxis": {"type": "category", "data": labels, "inverse": True,
                       "axisLine": {"lineStyle": {"color": "#1E293B"}},
@@ -829,15 +898,18 @@ def _build_avance_charts(df_grp, label_col):
                       "splitLine": {"show": False}},
             "series": [
                 {"name": "Presupuestado", "type": "bar", "data": p_d, "barWidth": "55%",
-                 "itemStyle": {"color": "rgba(84,112,198,0.26)", "borderRadius": [0,3,3,0]},
+                 "itemStyle": {"color": _grad_ppto, "borderRadius": [0, 4, 4, 0]},
+                 "emphasis": {"itemStyle": {"color": "rgba(84,112,198,0.70)"}},
                  "z": 1, "label": {"show": False}},
                 {"name": "OC Efectivo", "type": "bar", "data": o_d, "barWidth": "38%",
                  "barGap": "-100%",
-                 "itemStyle": {"color": "rgba(252,132,82,0.88)", "borderRadius": [0,3,3,0]},
+                 "itemStyle": {"color": _grad_oc, "borderRadius": [0, 4, 4, 0]},
+                 "emphasis": {"itemStyle": {"shadowBlur": 12, "shadowColor": "rgba(252,132,82,0.45)"}},
                  "z": 2, "label": {"show": False}},
                 {"name": "Recibido", "type": "bar", "data": r_d, "barWidth": "20%",
                  "barGap": "-100%",
-                 "itemStyle": {"color": "rgba(115,192,222,0.88)", "borderRadius": [0,3,3,0]},
+                 "itemStyle": {"color": _grad_rec, "borderRadius": [0, 4, 4, 0]},
+                 "emphasis": {"itemStyle": {"shadowBlur": 10, "shadowColor": "rgba(56,189,248,0.45)"}},
                  "z": 3, "label": {"show": False}},
             ]
         }
@@ -973,30 +1045,41 @@ else:
                 "itemStyle": {"color": color, "opacity": 0.38},
             })
 
+        _grad_rec_area = {"type": "linear", "x": 0, "y": 0, "x2": 0, "y2": 1,
+                          "colorStops": [{"offset": 0, "color": "rgba(56,189,248,0.28)"},
+                                         {"offset": 1, "color": "rgba(56,189,248,0.02)"}]}
+        _grad_fac_area = {"type": "linear", "x": 0, "y": 0, "x2": 0, "y2": 1,
+                          "colorStops": [{"offset": 0, "color": "rgba(167,139,250,0.22)"},
+                                         {"offset": 1, "color": "rgba(167,139,250,0.02)"}]}
         ec_series.append({
             "name": "Acum. Recepcionado", "type": "line", "yAxisIndex": 1,
             "data": [round(float(v)/1e6, 3) for v in rec_tot.cumsum().values],
-            "smooth": True,
-            "lineStyle": {"color": "#38BDF8", "width": 2.2},
-            "itemStyle": {"color": "#38BDF8"},
-            "symbol": "circle", "symbolSize": 5,
-            "areaStyle": {"color": "rgba(56,189,248,0.08)"}
+            "smooth": 0.5,
+            "lineStyle": {"color": "#38BDF8", "width": 2.5,
+                          "shadowBlur": 8, "shadowColor": "rgba(56,189,248,0.4)"},
+            "itemStyle": {"color": "#38BDF8",
+                          "shadowBlur": 6, "shadowColor": "rgba(56,189,248,0.5)"},
+            "symbol": "circle", "symbolSize": 6,
+            "areaStyle": {"color": _grad_rec_area}
         })
         ec_series.append({
             "name": "Acum. Facturación", "type": "line", "yAxisIndex": 1,
             "data": [round(float(v)/1e6, 3) for v in fac_tot.cumsum().values],
-            "smooth": True,
-            "lineStyle": {"color": "#A78BFA", "width": 2.2, "type": "dashed"},
+            "smooth": 0.5,
+            "lineStyle": {"color": "#A78BFA", "width": 2.5, "type": "dashed",
+                          "shadowBlur": 6, "shadowColor": "rgba(167,139,250,0.35)"},
             "itemStyle": {"color": "#A78BFA"},
-            "symbol": "circle", "symbolSize": 5,
+            "symbol": "circle", "symbolSize": 6,
+            "areaStyle": {"color": _grad_fac_area}
         })
 
         legend_all = legend_data + ["Acum. Recepcionado", "Acum. Facturación"]
         _h = max(460, len(all_months) * 22 + 220)
 
         opt_ev = {
-            "backgroundColor": "transparent", "animation": True,
-            "tooltip": {"trigger": "axis", "backgroundColor": "rgba(15,23,42,0.95)",
+            "backgroundColor": "transparent",
+            "animation": True, "animationDuration": 900, "animationEasing": "cubicOut",
+            "tooltip": {"trigger": "axis", "backgroundColor": "rgba(10,17,35,0.97)",
                         "borderColor": "rgba(255,255,255,0.10)",
                         "textStyle": {"color": "#F1F5F9", "fontSize": 11},
                         "axisPointer": {"type": "shadow"}},
