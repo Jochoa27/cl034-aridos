@@ -86,10 +86,11 @@ section[data-testid="stMain"] [data-testid="stButton"] > button[data-testid="bas
 .dn { font-size:0.73rem; font-weight:600; color:#FF4757; }
 .d0 { font-size:0.73rem; font-weight:600; color:#475569; }
 .row-lbl { font-size:0.68rem; font-weight:800; letter-spacing:0.10em; text-transform:uppercase; color:#64748B; margin-bottom:7px; }
-.sh { display:flex; align-items:center; gap:12px; margin:1.8rem 0 0.5rem; padding-bottom:10px; border-bottom:1px solid rgba(56,189,248,0.12); }
-.sh-bar { width:4px; height:22px; border-radius:2px; flex-shrink:0; }
-.sh-txt { font-size:0.79rem; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; color:#CBD5E1; text-shadow:0 0 18px rgba(56,189,248,0.25); }
-.sh-badge { margin-left:auto; font-size:0.64rem; font-weight:700; letter-spacing:0.06em; padding:3px 12px; border-radius:20px; border:1px solid rgba(56,189,248,0.25); }
+.sh { display:flex; align-items:center; gap:14px; margin:2.2rem 0 0.9rem; padding-bottom:13px; border-bottom:1px solid rgba(56,189,248,0.13); }
+.sh-bar { width:5px; height:30px; border-radius:3px; flex-shrink:0; }
+.sh-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.15rem; flex-shrink:0; }
+.sh-txt { font-size:1.05rem; font-weight:800; letter-spacing:0.10em; text-transform:uppercase; color:#E2E8F0; text-shadow:0 0 22px rgba(56,189,248,0.30); }
+.sh-badge { margin-left:auto; font-size:0.67rem; font-weight:700; letter-spacing:0.06em; padding:4px 14px; border-radius:20px; border:1px solid rgba(56,189,248,0.25); }
 .mk { background:linear-gradient(135deg,rgba(56,189,248,0.07),rgba(56,189,248,0.02)); border:1px solid rgba(56,189,248,0.18); border-radius:12px; padding:12px 14px; transition:border-color .2s,box-shadow .2s; }
 .mk-lb { font-size:0.57rem; font-weight:700; letter-spacing:0.11em; text-transform:uppercase; color:#64748B; margin-bottom:4px; }
 .mk-vl { font-size:1.28rem; font-weight:800; color:#F1F5F9; line-height:1; }
@@ -306,8 +307,10 @@ def seccion(icon, titulo, color="#38BDF8", badge_txt=None, badge_color=None):
     badge = (f'<span class="sh-badge" style="background:rgba(56,189,248,0.10);color:{bc};">'
              f'{badge_txt}</span>') if badge_txt else ""
     st.markdown(
-        f'<div class="sh"><div class="sh-bar" style="background:linear-gradient(180deg,{color},{color}55);box-shadow:0 0 8px {color}88;"></div>'
-        f'<div class="sh-txt">{icon} {titulo}</div>{badge}</div>',
+        f'<div class="sh">'
+        f'<div class="sh-bar" style="background:linear-gradient(180deg,{color},{color}44);box-shadow:0 0 10px {color}99;"></div>'
+        f'<div class="sh-icon" style="background:linear-gradient(135deg,{color}22,{color}06);border:1px solid {color}38;box-shadow:0 0 12px {color}22;">{icon}</div>'
+        f'<div class="sh-txt">{titulo}</div>{badge}</div>',
         unsafe_allow_html=True)
 
 def kpi_card(label, value, delta=None, delta_pos=None):
@@ -631,8 +634,8 @@ st.markdown(f"""
             border:1px solid rgba(56,189,248,0.15);border-radius:18px;padding:16px 22px;margin-bottom:18px;
             display:flex;align-items:center;gap:16px;">
   <div>
-    <div style="font-size:0.57rem;font-weight:800;letter-spacing:0.24em;text-transform:uppercase;color:#38BDF8;margin-bottom:2px;">CONSTRUCTORA LONDRES</div>
-    <div style="font-size:1.48rem;font-weight:900;color:#F8FAFC;letter-spacing:0.01em;line-height:1.1;">🏗️ CONTROL DE ÁRIDOS</div>
+    <div style="font-size:0.68rem;font-weight:800;letter-spacing:0.28em;text-transform:uppercase;color:#38BDF8;margin-bottom:4px;text-shadow:0 0 14px rgba(56,189,248,0.40);">CONSTRUCTORA LONDRES</div>
+    <div style="font-size:2.0rem;font-weight:900;color:#F8FAFC;letter-spacing:0.02em;line-height:1.05;text-shadow:0 0 24px rgba(255,255,255,0.12);">🏗️ CONTROL DE ÁRIDOS</div>
   </div>
   <div style="width:1px;height:38px;background:rgba(56,189,248,0.20);flex-shrink:0;"></div>
   <div style="background:rgba(56,189,248,0.09);border:1px solid rgba(56,189,248,0.22);border-radius:10px;padding:6px 14px;">
