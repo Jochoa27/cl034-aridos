@@ -1015,6 +1015,10 @@ else:
                      (df_recfac_f["Estado_Doc_Fac"].astype(str).str.strip().isin(_APROBADOS_EV))
                  ].drop_duplicates("N_Factura")
                  [["N_OC","N_Factura","Monto_Factura","Fecha_Rec_Fac"]].copy())
+    # Aplicar netting de notas de crédito antes de distribuir por CC
+    _fac_base["Monto_Factura"] = (
+        _fac_base["Monto_Factura"] - _fac_base["N_Factura"].map(nc_by_fac).fillna(0)
+    ).clip(lower=0)
     df_fac_ev = (_fac_base
                  .merge(_oc_monto[["N_OC","CC","Material","Prop_CC"]], on="N_OC", how="left")
                  .dropna(subset=["Fecha_Rec_Fac"]).copy())
@@ -1146,12 +1150,12 @@ else:
         _tot_fac = df_fac["Monto_Factura"].sum()
         _n_rec   = df_rec["N_Doc_Rec"].nunique()
         _n_fac   = df_fac["N_Factura"].nunique()
-        st.caption("↑ ▓ Barra sólida = Recepcionado · ░ Barra clara = Facturado Aprobado · Líneas = Acumulado (eje der.)")
+        st.caption("↑ ▓ Barra sólida = Recepcionado · ░ Barra clara = Facturado Neto (−NC) · Líneas = Acumulado (eje der.)")
         _ev1, _ev2, _ev3, _ev4 = st.columns(4)
-        _ev1.metric("Total Recepcionado",       _n(_tot_rec/1e6, 2, "MM$ "))
-        _ev2.metric("Total Facturado Aprobado", _n(_tot_fac/1e6, 2, "MM$ "))
-        _ev3.metric("Docs de Recepción",        str(_n_rec))
-        _ev4.metric("Facturas Aprobadas",       str(_n_fac))
+        _ev1.metric("Total Recepcionado",        _n(_tot_rec/1e6, 2, "MM$ "))
+        _ev2.metric("Total Facturado Neto (−NC)", _n(_tot_fac/1e6, 2, "MM$ "))
+        _ev3.metric("Docs de Recepción",          str(_n_rec))
+        _ev4.metric("Facturas Aprobadas",          str(_n_fac))
 
     tab_ev_cc, tab_ev_mat = st.tabs(["📂 Por Cuenta de Costo","🪨 Por Tipo de Árido"])
     with tab_ev_cc:
