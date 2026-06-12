@@ -294,6 +294,9 @@ def color_estado(val):
     if val == "Cerrada": return f"color:{C_OK};font-weight:bold"
     return ""
 
+def color_alerta_fac(val):
+    return f"color:{C_CRITICO};font-weight:bold" if val == "FAC > REC" else ""
+
 # ── HTML HELPERS ──────────────────────────────────────────────────────────────
 def seccion(icon, titulo, color="#5470c6", badge_txt=None, badge_color=None):
     bc = badge_color or color
@@ -1279,6 +1282,18 @@ with tab_recfac:
         _df_con_fac = _df_rec_docs[_df_rec_docs["N_Factura"] > 0]
         _n_rec_fac_no_apr = (~_df_con_fac["Estado_Doc_Fac"].astype(str).str.strip().isin(_APROBADOS)).sum()
 
+        # Alerta: facturación aprobada > recepcionado (por OC)
+        _rec_by_oc = _df_rec_docs.groupby("N_OC")["Monto_Rec"].sum()
+        _fac_by_oc = (df_recfac_f[(df_recfac_f["N_Factura"] > 0) &
+                                    df_recfac_f["Estado_Doc_Fac"].astype(str).str.strip().isin(_APROBADOS)]
+                      .drop_duplicates("N_Factura")
+                      .groupby("N_OC")["Monto_Factura"].sum())
+        _ocs_fac_mayor_rec = {
+            oc for oc in _fac_by_oc.index
+            if _fac_by_oc.get(oc, 0) > _rec_by_oc.get(oc, 0) + 1000
+        }
+        _n_fac_mayor_rec = len(_ocs_fac_mayor_rec)
+
         _fc1, _fc2, _ = st.columns([1, 1, 2])
         with _fc1:
             _est_opts    = sorted(df_recfac_f["Estado_Rec_OC"].dropna().unique())
@@ -1301,17 +1316,19 @@ with tab_recfac:
             "N° Doc. Recepción","Monto Recibido ($)","Fecha Recepción","Estado Guía","Saldo x Recibir ($)",
             "N° Factura","Monto Factura ($)","Fecha Recep. Factura","Estado Factura","Estado Asociación"
         ]
+        _rf["Alerta"] = _rf["N° OC"].isin(_ocs_fac_mayor_rec).map({True: "FAC > REC", False: ""})
 
         if "rf_filtro" not in st.session_state: st.session_state["rf_filtro"] = "todo"
         _rsel = st.session_state.get("rf_filtro", "todo")
-        if _rsel == "sin_rec":     _rf_view = _rf[_rf["Estado Recepción OC"] == "Sin Recepciones"].copy()
-        elif _rsel == "sin_fac":   _rf_view = _rf[(_rf["N° Doc. Recepción"] > 0) & (_rf["N° Factura"] <= 0)].copy()
+        if _rsel == "sin_rec":         _rf_view = _rf[_rf["Estado Recepción OC"] == "Sin Recepciones"].copy()
+        elif _rsel == "sin_fac":       _rf_view = _rf[(_rf["N° Doc. Recepción"] > 0) & (_rf["N° Factura"] <= 0)].copy()
+        elif _rsel == "fac_mayor_rec": _rf_view = _rf[_rf["N° OC"].isin(_ocs_fac_mayor_rec)].copy()
         elif _rsel == "sin_fac_apr":
             _rf_view = _rf[(_rf["N° Doc. Recepción"] > 0) & (_rf["N° Factura"] > 0) &
                            (~_rf["Estado Factura"].astype(str).str.strip().isin(_APROBADOS))].copy()
         else: _rf_view = _rf
 
-        _rk1,_rk2 = st.columns(2)
+        _rk1,_rk2,_rk3 = st.columns(3)
         with _rk1:
             if st.button(f"TODAS\n{len(_rf):,} filas".replace(".","\x00").replace(",",".").replace("\x00",","),
                          key="rf_todo", use_container_width=True, type="primary" if _rsel=="todo" else "secondary"):
@@ -1320,6 +1337,11 @@ with tab_recfac:
             if st.button(f"SIN RECEPCIÓN OC\n{_n_sin_rec} órdenes\npendientes",
                          key="rf_sin_rec", use_container_width=True, type="primary" if _rsel=="sin_rec" else "secondary"):
                 st.session_state["rf_filtro"] = "sin_rec"; st.rerun()
+        with _rk3:
+            if st.button(f"FAC > REC\n{_n_fac_mayor_rec} OCs\nfactura excede recepción",
+                         key="rf_fac_mayor", use_container_width=True,
+                         type="primary" if _rsel=="fac_mayor_rec" else "secondary"):
+                st.session_state["rf_filtro"] = "fac_mayor_rec"; st.rerun()
 
         st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
         _rk5,_rk6,_rk7,_rk8 = st.columns(4)
@@ -1340,8 +1362,9 @@ with tab_recfac:
                .format({"N° Doc. Recepción":_FI, "N° Factura":_FI,
                         "Monto Recibido ($)":_FS0, "Saldo x Recibir ($)":_FS0,
                         "Monto Factura ($)":_FS0}, na_rep="-")
-               .map(color_rec_oc, subset=["Estado Recepción OC"])
-               .map(color_fac,    subset=["Estado Guía","Estado Factura","Estado Asociación"]),
+               .map(color_rec_oc,    subset=["Estado Recepción OC"])
+               .map(color_fac,       subset=["Estado Guía","Estado Factura","Estado Asociación"])
+               .map(color_alerta_fac, subset=["Alerta"]),
             use_container_width=True, hide_index=True
         )
         st.caption(f"{len(_rf_view):,} documentos · {_rf_view['N° OC'].nunique():,} OCs de áridos".replace(".","\x00").replace(",",".").replace("\x00",","))
