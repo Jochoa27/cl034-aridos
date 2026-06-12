@@ -1402,8 +1402,10 @@ with tab_recfac:
         # de cada factura (IConstruye repite el total de la factura en cada doc de recepción)
         _rf_display = _rf_view.copy()
         _dup_fac = _rf_display["N° Factura"].gt(0) & _rf_display["N° Factura"].duplicated()
-        _rf_display.loc[_dup_fac, ["Monto Factura ($)", "Fecha Recep. Factura",
-                                    "Estado Factura", "Estado Asociación"]] = float("nan")
+        _rf_display.loc[_dup_fac, "Monto Factura ($)"]    = float("nan")
+        _rf_display.loc[_dup_fac, "Fecha Recep. Factura"] = pd.NaT
+        _rf_display.loc[_dup_fac, "Estado Factura"]       = None
+        _rf_display.loc[_dup_fac, "Estado Asociación"]    = None
 
         st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
         def _row_fac_mayor(row):
