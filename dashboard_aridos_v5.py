@@ -334,6 +334,7 @@ def mini_kpi(label, value, sub=None, color="#38BDF8"):
     return (
         f'<div style="background:linear-gradient(135deg,{color}18,{color}05);'
         f'border:1px solid {color}38;border-radius:14px;padding:14px 15px 12px;'
+        f'min-height:88px;display:flex;flex-direction:column;justify-content:center;'
         f'transition:border-color .2s,box-shadow .2s;">'
         f'<div style="font-size:0.55rem;font-weight:800;letter-spacing:0.12em;'
         f'text-transform:uppercase;color:#475569;margin-bottom:5px;">{label}</div>'
