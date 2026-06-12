@@ -1316,7 +1316,8 @@ with tab_recfac:
             "N° Doc. Recepción","Monto Recibido ($)","Fecha Recepción","Estado Guía","Saldo x Recibir ($)",
             "N° Factura","Monto Factura ($)","Fecha Recep. Factura","Estado Factura","Estado Asociación"
         ]
-        _rf["Alerta"] = _rf["N° OC"].isin(_ocs_fac_mayor_rec).map({True: "FAC > REC", False: ""})
+        _rf["Alerta"] = _rf["N° OC"].isin(_ocs_fac_mayor_rec).map({True: "⚠ FAC>REC", False: ""})
+        _rf = _rf[["Alerta"] + [c for c in _rf.columns if c != "Alerta"]]
 
         if "rf_filtro" not in st.session_state: st.session_state["rf_filtro"] = "todo"
         _rsel = st.session_state.get("rf_filtro", "todo")
@@ -1357,8 +1358,12 @@ with tab_recfac:
                 st.session_state["rf_filtro"] = "sin_fac_apr"; st.rerun()
 
         st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
+        def _row_fac_mayor(row):
+            bg = "background-color:rgba(238,102,102,0.13);" if row["Alerta"] == "⚠ FAC>REC" else ""
+            return [bg] * len(row)
         st.dataframe(
             _rf_view.style
+               .apply(_row_fac_mayor, axis=1)
                .format({"N° Doc. Recepción":_FI, "N° Factura":_FI,
                         "Monto Recibido ($)":_FS0, "Saldo x Recibir ($)":_FS0,
                         "Monto Factura ($)":_FS0}, na_rep="-")
