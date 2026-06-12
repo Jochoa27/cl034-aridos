@@ -328,10 +328,19 @@ def kpi_row(items, cols=4):
         f'<div class="kpi-g" style="grid-template-columns:repeat({cols},1fr);">{html}</div>',
         unsafe_allow_html=True)
 
-def mini_kpi(label, value, sub=None, color="#F1F5F9"):
-    sub_html = f'<div class="mk-sb">{sub}</div>' if sub else ""
-    return (f'<div class="mk"><div class="mk-lb">{label}</div>'
-            f'<div class="mk-vl" style="color:{color};">{value}</div>{sub_html}</div>')
+def mini_kpi(label, value, sub=None, color="#38BDF8"):
+    sub_html = (f'<div style="font-size:0.65rem;color:{color};font-weight:600;margin-top:4px;opacity:0.78;">{sub}</div>'
+                if sub else "")
+    return (
+        f'<div style="background:linear-gradient(135deg,{color}18,{color}05);'
+        f'border:1px solid {color}38;border-radius:14px;padding:14px 15px 12px;'
+        f'transition:border-color .2s,box-shadow .2s;">'
+        f'<div style="font-size:0.55rem;font-weight:800;letter-spacing:0.12em;'
+        f'text-transform:uppercase;color:#475569;margin-bottom:5px;">{label}</div>'
+        f'<div style="font-size:1.32rem;font-weight:900;color:{color};line-height:1;'
+        f'font-variant-numeric:tabular-nums;text-shadow:0 0 16px {color}66;">{value}</div>'
+        f'{sub_html}</div>'
+    )
 
 def ring_kpi(label, pct, value_str, sub=None, color="#5470c6"):
     """SVG animated progress ring KPI card."""
