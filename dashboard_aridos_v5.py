@@ -753,7 +753,7 @@ _worst_desv    = (_rsk_worst_cc["Desv_Fin_%"] if _rsk_worst_cc is not None and n
 _score_rgb     = "35,209,96" if _rsk_score >= 15 else ("255,179,0" if _rsk_score >= 5 else "255,71,87")
 
 st.markdown(f"""
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">
   <div style="background:linear-gradient(135deg,rgba(255,71,87,0.18) 0%,rgba(255,71,87,0.05) 100%);
               border:1.5px solid rgba(255,71,87,0.55);border-radius:16px;padding:18px 20px;
               box-shadow:0 0 32px rgba(255,71,87,0.22),inset 0 1px 0 rgba(255,255,255,0.06);">
@@ -774,13 +774,6 @@ st.markdown(f"""
     <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;color:#64748B;margin-bottom:10px;">Mayor Desvío</div>
     <div style="font-size:1.05rem;font-weight:800;color:#FF4757;line-height:1.2;text-shadow:0 0 16px rgba(255,71,87,0.4);">{_worst_lbl}</div>
     <div style="font-size:0.78rem;font-weight:700;color:#FF4757;margin-top:6px;">{_worst_desv:+.1f}% vs ppto</div>
-  </div>
-  <div style="background:linear-gradient(135deg,rgba({_score_rgb},0.15) 0%,rgba({_score_rgb},0.04) 100%);
-              border:1.5px solid rgba({_score_rgb},0.50);border-radius:16px;padding:18px 20px;
-              box-shadow:0 0 32px rgba({_score_rgb},0.18),inset 0 1px 0 rgba(255,255,255,0.06);">
-    <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;color:{_score_color};opacity:0.85;margin-bottom:10px;">Estado Presupuesto</div>
-    <div style="font-size:1.90rem;font-weight:900;color:{_score_color};line-height:1;text-shadow:0 0 20px rgba({_score_rgb},0.5);">{_score_label}</div>
-    <div style="font-size:0.78rem;color:#94A3B8;margin-top:6px;">{compromiso_pct:.1f}% comprometido</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
