@@ -657,21 +657,75 @@ st.divider()
 # ═════════════════════════════════════════════════════════════════════════════
 # DIAGNÓSTICO DE RIESGO
 # ═════════════════════════════════════════════════════════════════════════════
-seccion("🎯", "DIAGNÓSTICO DE RIESGO", color=C_CRITICO,
+seccion("🎯", "DIAGNÓSTICO DE RIESGO", color="#FF4757",
         badge_txt=f"{n_cc_criticas} CC críticas" if n_cc_criticas else "Sin alertas CC",
-        badge_color=C_CRITICO if n_cc_criticas else C_OK)
+        badge_color="#FF4757" if n_cc_criticas else "#23D160")
+
+# ── Hero Risk Summary ─────────────────────────────────────────────────────────
+_gc_exc = global_cc[global_cc["Monto_OC"] > global_cc["Monto_Ppto"]]
+_rsk_total_exp = _gc_exc["Monto_OC"].sum() / 1e6
+_rsk_total_exp_fmt = f"MM$ {_rsk_total_exp:,.1f}".replace(".", "\x00").replace(",", ".").replace("\x00", ",")
+_rsk_worst_cc  = global_cc.sort_values("Desv_Fin_%").iloc[0] if not global_cc.empty else None
+_rsk_score     = max(0, min(100, int(100 - compromiso_pct))) if tot_ppto else 50
+_score_color   = "#23D160" if _rsk_score >= 15 else ("#FFB300" if _rsk_score >= 5 else "#FF4757")
+_score_label   = "SANO" if _rsk_score >= 15 else ("ALERTA" if _rsk_score >= 5 else "CRÍTICO")
+_worst_lbl     = (_rsk_worst_cc["CC_Label"] if _rsk_worst_cc is not None else "—")
+_worst_desv    = (_rsk_worst_cc["Desv_Fin_%"] if _rsk_worst_cc is not None and not pd.isna(_rsk_worst_cc["Desv_Fin_%"]) else 0)
+_score_rgb     = "35,209,96" if _rsk_score >= 15 else ("255,179,0" if _rsk_score >= 5 else "255,71,87")
+
+st.markdown(f"""
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
+  <div style="background:linear-gradient(135deg,rgba(255,71,87,0.18) 0%,rgba(255,71,87,0.05) 100%);
+              border:1.5px solid rgba(255,71,87,0.55);border-radius:16px;padding:18px 20px;
+              box-shadow:0 0 32px rgba(255,71,87,0.22),inset 0 1px 0 rgba(255,255,255,0.06);">
+    <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;color:rgba(255,71,87,0.85);margin-bottom:10px;">CC Críticas</div>
+    <div style="font-size:2.4rem;font-weight:900;color:#FF4757;line-height:1;text-shadow:0 0 20px rgba(255,71,87,0.6);">{n_cc_criticas}</div>
+    <div style="font-size:0.68rem;color:#94A3B8;margin-top:6px;">cuentas sobre presupuesto</div>
+  </div>
+  <div style="background:linear-gradient(135deg,rgba(255,179,0,0.15) 0%,rgba(255,179,0,0.04) 100%);
+              border:1.5px solid rgba(255,179,0,0.50);border-radius:16px;padding:18px 20px;
+              box-shadow:0 0 32px rgba(255,179,0,0.18),inset 0 1px 0 rgba(255,255,255,0.06);">
+    <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;color:rgba(255,179,0,0.90);margin-bottom:10px;">Exposición Total</div>
+    <div style="font-size:2.0rem;font-weight:900;color:#FFB300;line-height:1;text-shadow:0 0 20px rgba(255,179,0,0.5);">{_rsk_total_exp_fmt}</div>
+    <div style="font-size:0.68rem;color:#94A3B8;margin-top:6px;">monto en zona de exceso</div>
+  </div>
+  <div style="background:linear-gradient(135deg,rgba(255,71,87,0.12) 0%,rgba(15,23,42,0.0) 100%);
+              border:1.5px solid rgba(255,255,255,0.10);border-radius:16px;padding:18px 20px;
+              box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);">
+    <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;color:#64748B;margin-bottom:10px;">Mayor Desvío</div>
+    <div style="font-size:1.05rem;font-weight:800;color:#FF4757;line-height:1.2;text-shadow:0 0 16px rgba(255,71,87,0.4);">{_worst_lbl}</div>
+    <div style="font-size:0.78rem;font-weight:700;color:#FF4757;margin-top:6px;">{_worst_desv:+.1f}% vs ppto</div>
+  </div>
+  <div style="background:linear-gradient(135deg,rgba({_score_rgb},0.15) 0%,rgba({_score_rgb},0.04) 100%);
+              border:1.5px solid rgba({_score_rgb},0.50);border-radius:16px;padding:18px 20px;
+              box-shadow:0 0 32px rgba({_score_rgb},0.18),inset 0 1px 0 rgba(255,255,255,0.06);">
+    <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;color:{_score_color};opacity:0.85;margin-bottom:10px;">Estado Presupuesto</div>
+    <div style="font-size:1.90rem;font-weight:900;color:{_score_color};line-height:1;text-shadow:0 0 20px rgba({_score_rgb},0.5);">{_score_label}</div>
+    <div style="font-size:0.78rem;color:#94A3B8;margin-top:6px;">{compromiso_pct:.1f}% comprometido</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
 tab_matrix, tab_pareto = st.tabs(["  🔴  Matriz de Riesgo  ","  📊  Pareto de Desvíos  "])
 
 with tab_matrix:
-    st.markdown('<div class="risk-cap">Eje X: desviación financiera % · Eje Y: monto comprometido MM$ · Tamaño: monto comprometido OC · Color: estado de alerta<br>Las burbujas en la zona <b style="color:#ee6666;">superior-izquierda</b> concentran el mayor riesgo presupuestario.</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background:linear-gradient(90deg,rgba(255,71,87,0.08),rgba(84,112,198,0.06),rgba(35,209,96,0.06));
+                border:1px solid rgba(255,255,255,0.07);border-radius:10px;
+                padding:10px 16px;margin-bottom:14px;font-size:0.75rem;color:#64748B;line-height:1.6;">
+      <span style="color:#FF4757;font-weight:700;">■ Eje X</span> Desviación financiera % ·
+      <span style="color:#FFB300;font-weight:700;">■ Eje Y</span> Monto comprometido MM$ ·
+      <span style="color:#94A3B8;font-weight:700;">⬤ Tamaño</span> Monto OC ·
+      Zona <span style="color:#FF4757;font-weight:700;">izquierda</span> = alta exposición ·
+      Zona <span style="color:#23D160;font-weight:700;">derecha</span> = margen disponible
+    </div>""", unsafe_allow_html=True)
 
     gc = global_cc.copy()
     gc["Desv_plot"] = gc["Desv_Fin_%"].fillna(-100)
     gc["OC_MM"]     = gc["Monto_OC"] / 1e6
     gc["Ppto_MM"]   = gc["Monto_Ppto"] / 1e6
     _maxoc          = gc["OC_MM"].max() if gc["OC_MM"].max() > 0 else 1
-    gc["size_px"]   = gc["OC_MM"].apply(lambda v: 16 + (v/_maxoc)*46 if v > 0 else 12)
+    gc["size_px"]   = gc["OC_MM"].apply(lambda v: 20 + (v/_maxoc)*55 if v > 0 else 14)
     gc["cat"]       = gc["Sem_Fin"].map({"🔴":"Crítico","🟡":"Alerta","🟢":"Normal","⚪":"Sin ppto"}).fillna("Sin ppto")
 
     gc = gc.sort_values(["Desv_plot","OC_MM"]).reset_index(drop=True)
@@ -687,10 +741,19 @@ with tab_matrix:
     gc["_jx"] += gc["_rank"].apply(lambda r: _ox[r % 4])
     gc["_jy"] += gc["_rank"].apply(lambda r: _oy[r % 4])
 
-    _ymax = max(gc["_jy"].max() * 1.20, 1)
-    _cat_colors = {"Crítico": "#ee6666", "Alerta": "#fac858", "Normal": "#91cc75", "Sin ppto": "#475569"}
+    _ymax    = max(gc["_jy"].max() * 1.22, 1)
+    _ymax_v  = round(float(_ymax), 2)
+    _xmin_v  = round(float(gc["_jx"].min() - 6) if not gc.empty else -20, 1)
+    _xmax_v  = round(float(gc["_jx"].max() + 8) if not gc.empty else 40, 1)
+
+    _RISK_COLORS = {
+        "Crítico":  ("#FF4757", "rgba(255,71,87,0.90)",  "rgba(255,71,87,0.35)",  20),
+        "Alerta":   ("#FFB300", "rgba(255,179,0,0.90)",  "rgba(255,179,0,0.30)",  12),
+        "Normal":   ("#23D160", "rgba(35,209,96,0.90)",  "rgba(35,209,96,0.25)",   8),
+        "Sin ppto": ("#64748B", "rgba(100,116,139,0.80)","rgba(100,116,139,0.20)", 6),
+    }
     ec_series_mx = []
-    for cat_name, cat_color in [("Crítico","#ee6666"),("Alerta","#fac858"),("Normal","#91cc75"),("Sin ppto","#475569")]:
+    for cat_name, (c_hex, c_fill, c_shadow, blur) in _RISK_COLORS.items():
         sub = gc[gc["cat"] == cat_name]
         if sub.empty: continue
         pts = []
@@ -709,51 +772,81 @@ with tab_matrix:
             "type": "scatter",
             "data": pts,
             "symbolSize": "__SYMSIZE__",
-            "itemStyle": {"color": cat_color, "opacity": 0.85, "borderColor": "rgba(255,255,255,0.22)", "borderWidth": 1.5},
-            "label": {"show": True, "formatter": "{b}", "color": "#F1F5F9", "fontSize": 10, "distance": 5},
-            "emphasis": {"scale": 1.15}
+            "itemStyle": {
+                "color": c_fill,
+                "borderColor": c_hex,
+                "borderWidth": 2.5,
+                "shadowBlur": blur,
+                "shadowColor": c_shadow,
+            },
+            "label": {
+                "show": True, "formatter": "{b}",
+                "color": "#F1F5F9", "fontSize": 10, "fontWeight": "700",
+                "distance": 8,
+                "textShadowBlur": 4, "textShadowColor": "rgba(0,0,0,0.8)",
+            },
+            "emphasis": {
+                "scale": 1.18,
+                "itemStyle": {"shadowBlur": blur * 2, "shadowColor": c_shadow},
+            },
         })
 
-    _umbral_v = float(umbral)
-    _ymax_v   = round(float(_ymax), 2)
-    _xmin_v   = round(float(gc["_jx"].min() - 5) if not gc.empty else -_umbral_v - 10, 1)
-
     js_mx = (
-        '{"backgroundColor":"transparent","animation":true,'
-        '"tooltip":{"trigger":"item","backgroundColor":"rgba(15,23,42,0.95)",'
-        '"borderColor":"rgba(255,255,255,0.10)","textStyle":{"color":"#F1F5F9","fontSize":12},'
+        '{"backgroundColor":"transparent","animation":true,"animationDuration":900,"animationEasing":"cubicOut",'
+        '"tooltip":{"trigger":"item",'
+        '"backgroundColor":"rgba(10,15,30,0.97)",'
+        '"borderColor":"rgba(255,255,255,0.12)","borderWidth":1,'
+        '"padding":[12,16],'
+        '"textStyle":{"color":"#F1F5F9","fontSize":12},'
+        '"extraCssText":"border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.6);",'
         '"formatter":function(p){'
-        'var d=p.data;'
-        'return "<b>"+d.name+" · "+d.ccLabel+"</b><br/>"'
-        '+"Desv. financiera: <b>"+d.desv.toFixed(1)+"%</b><br/>"'
-        '+"OC comprometido: MM$ "+d.oc.toFixed(1)+"<br/>"'
-        '+"Presupuesto: MM$ "+d.ppto.toFixed(1)+"<br/>"'
-        '+"Desv. cantidad: "+d.desvCant.toFixed(1)+"%";}},'
-        '"toolbox":{"feature":{"saveAsImage":{"title":"Guardar"},"restore":{"title":"Restaurar"}},'
-        '"iconStyle":{"borderColor":"#475569"},"right":10,"top":5},'
-        '"legend":{"textStyle":{"color":"#94A3B8","fontSize":11},"right":80,"top":5},'
-        '"xAxis":{"type":"value","name":"Desviación Financiera (%)","nameLocation":"middle","nameGap":32,'
-        f'"min":{_xmin_v},'
-        '"nameTextStyle":{"color":"#64748B","fontSize":11},'
-        '"axisLine":{"lineStyle":{"color":"#1E293B"}},'
-        '"splitLine":{"lineStyle":{"color":"rgba(255,255,255,0.055)"}},'
-        '"axisLabel":{"color":"#94A3B8","formatter":"{value}%"}},'
-        '"yAxis":{"type":"value","name":"Monto Comprometido (MM$)","nameLocation":"middle","nameGap":52,'
+        'var d=p.data,col=p.color;'
+        'var icon=d.desv<0?"🔴 EXCESO":"🟢 MARGEN";'
+        'return \'<div style="font-size:13px;font-weight:800;margin-bottom:6px;color:\'+col+\'">\'+d.name+\'</div>\''
+        '+\'<div style="color:#94A3B8;font-size:11px;margin-bottom:8px;">\'+d.ccLabel+\'</div>\''
+        '+\'<div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;">\''
+        '+\'<span style="color:#64748B;">Desv. financiera: </span><b style="color:\'+col+\'">\'+d.desv.toFixed(1)+\'%</b> \'+icon+\'<br/>\''
+        '+\'<span style="color:#64748B;">OC comprometido: </span><b>MM$ \'+d.oc.toFixed(2)+\'</b><br/>\''
+        '+\'<span style="color:#64748B;">Presupuesto CC: </span><b>MM$ \'+d.ppto.toFixed(2)+\'</b><br/>\''
+        '+\'<span style="color:#64748B;">Desv. cantidad: </span><b>\'+d.desvCant.toFixed(1)+\'%</b></div>\';}}'
+        ','
+        '"toolbox":{"feature":{"saveAsImage":{"title":"Guardar"},"restore":{"title":"Reset"}},'
+        '"iconStyle":{"borderColor":"#334155"},"right":12,"top":8},'
+        '"legend":{"data":["Crítico","Alerta","Normal","Sin ppto"],'
+        '"textStyle":{"color":"#94A3B8","fontSize":11},'
+        '"itemStyle":{"borderWidth":0},'
+        '"right":90,"top":8,"icon":"circle"},'
+        '"xAxis":{"type":"value","name":"Desviación Financiera (%)","nameLocation":"middle","nameGap":36,'
+        f'"min":{_xmin_v},"max":{_xmax_v},'
+        '"nameTextStyle":{"color":"#475569","fontSize":11,"fontWeight":"600"},'
+        '"axisLine":{"show":true,"lineStyle":{"color":"rgba(255,255,255,0.10)","width":1}},'
+        '"splitLine":{"lineStyle":{"color":"rgba(255,255,255,0.04)","type":"dashed"}},'
+        '"axisLabel":{"color":"#64748B","fontSize":10,"formatter":"{value}%"}},'
+        '"yAxis":{"type":"value","name":"Monto Comprometido (MM$)","nameLocation":"middle","nameGap":58,'
         f'"min":0,"max":{_ymax_v},'
-        '"nameTextStyle":{"color":"#64748B","fontSize":11},'
-        '"axisLine":{"lineStyle":{"color":"#1E293B"}},'
-        '"splitLine":{"lineStyle":{"color":"rgba(255,255,255,0.055)"}},'
-        '"axisLabel":{"color":"#94A3B8","formatter":"MM$ {value}"}},'
+        '"nameTextStyle":{"color":"#475569","fontSize":11,"fontWeight":"600"},'
+        '"axisLine":{"show":true,"lineStyle":{"color":"rgba(255,255,255,0.10)","width":1}},'
+        '"splitLine":{"lineStyle":{"color":"rgba(255,255,255,0.04)","type":"dashed"}},'
+        '"axisLabel":{"color":"#64748B","fontSize":10,"formatter":"MM$ {value}"}},'
         '"graphic":['
-        '{"type":"text","left":"58%","top":18,"style":{"text":"ZONA SEGURA ✓","fill":"#91cc75","fontSize":11,"fontWeight":"600"}},'
-        '{"type":"text","left":10,"top":18,"style":{"text":"ALTA EXPOSICIÓN ⚠","fill":"#ee6666","fontSize":11,"fontWeight":"600"}},'
-        f'{{"type":"line","shape":{{"x1":0,"y1":0,"x2":0,"y2":400}},"style":{{"stroke":"rgba(255,255,255,0.18)","lineDash":[4,4],"lineWidth":1.5}},"zlevel":5}}'
+        '{"type":"rect","shape":{"x":0,"y":0,"width":"50%","height":"100%"},"silent":true,'
+        '"style":{"fill":"rgba(255,71,87,0.028)"},"zlevel":-1},'
+        '{"type":"rect","shape":{"x":"50%","y":0,"width":"50%","height":"100%"},"silent":true,'
+        '"style":{"fill":"rgba(35,209,96,0.022)"},"zlevel":-1},'
+        '{"type":"text","left":"62%","top":14,'
+        '"style":{"text":"ZONA MARGEN  ✓","fill":"rgba(35,209,96,0.65)","fontSize":10,"fontWeight":"700","letterSpacing":2}},'
+        '{"type":"text","left":52,"top":14,'
+        '"style":{"text":"◀  ALTA EXPOSICIÓN","fill":"rgba(255,71,87,0.70)","fontSize":10,"fontWeight":"700","letterSpacing":2}},'
+        '{"type":"line",'
+        '"shape":{"x1":"50%","y1":0,"x2":"50%","y2":"100%"},'
+        '"style":{"stroke":"rgba(255,255,255,0.20)","lineDash":[5,5],"lineWidth":1.5},'
+        '"zlevel":5}'
         '],'
         f'"series":{json.dumps(ec_series_mx, ensure_ascii=False)}'
         '}'
     )
     js_mx = js_mx.replace('"__SYMSIZE__"', 'function(val){return val[2];}')
-    ec_html(js_mx, height=510)
+    ec_html(js_mx, height=540)
 
 with tab_pareto:
     gc_p = global_cc.copy()
@@ -764,37 +857,59 @@ with tab_pareto:
     tot_e = exc["Exceso_MM"].sum() if not exc.empty else 0.0
     tot_a = aho["Ahorro_MM"].sum() if not aho.empty else 0.0
     _n_rows  = max(len(exc), len(aho), 1)
-    _chart_h = max(320, _n_rows * 46 + 80)
+    _chart_h = max(340, _n_rows * 50 + 90)
     _max_val = max(exc["Exceso_MM"].max() if not exc.empty else 0,
                    aho["Ahorro_MM"].max() if not aho.empty else 0, 0.1)
 
     _pc1, _pc2 = st.columns(2)
 
-    def _ec_hbar(labels, values, color, title_color, x_max, height):
+    def _ec_hbar_v2(labels, values, color_from, color_to, shadow_color, x_max, height):
+        grad = {"type":"linear","x":0,"y":0,"x2":1,"y2":0,
+                "colorStops":[{"offset":0,"color":color_from},{"offset":1,"color":color_to}]}
         opt = {
-            "backgroundColor": "transparent", "animation": True,
-            "tooltip": {"trigger": "axis", "backgroundColor": "rgba(15,23,42,0.95)",
-                        "borderColor": "rgba(255,255,255,0.10)",
-                        "textStyle": {"color": "#F1F5F9"},
-                        "axisPointer": {"type": "shadow"}},
+            "backgroundColor": "transparent",
+            "animation": True, "animationDuration": 700, "animationEasing": "cubicOut",
+            "tooltip": {
+                "trigger": "axis",
+                "backgroundColor": "rgba(10,15,30,0.97)",
+                "borderColor": "rgba(255,255,255,0.12)", "borderWidth": 1,
+                "textStyle": {"color": "#F1F5F9", "fontSize": 12},
+                "extraCssText": "border-radius:10px;",
+                "axisPointer": {"type": "shadow", "shadowStyle": {"color": "rgba(255,255,255,0.03)"}}
+            },
             "toolbox": {"feature": {"saveAsImage": {"title": "Guardar"}},
-                        "iconStyle": {"borderColor": "#475569"}, "right": 5, "top": 5},
-            "xAxis": {"type": "value", "max": round(float(x_max), 3),
-                      "axisLine": {"lineStyle": {"color": "#1E293B"}},
-                      "splitLine": {"lineStyle": {"color": "rgba(255,255,255,0.055)"}},
-                      "axisLabel": {"color": "#94A3B8", "formatter": "__FMT_X__"}},
-            "yAxis": {"type": "category", "data": labels,
-                      "axisLine": {"lineStyle": {"color": "#1E293B"}},
-                      "axisLabel": {"color": "#94A3B8", "fontSize": 11},
-                      "splitLine": {"show": False}},
-            "series": [{"type": "bar",
-                        "data": [round(float(v), 3) for v in values],
-                        "itemStyle": {"color": color, "opacity": 0.88,
-                                      "borderRadius": [0, 4, 4, 0]},
-                        "label": {"show": True, "position": "right",
-                                  "color": "#94A3B8", "fontSize": 9,
-                                  "formatter": "__FMT_L__"},
-                        "emphasis": {"itemStyle": {"opacity": 1}}}]
+                        "iconStyle": {"borderColor": "#334155"}, "right": 6, "top": 6},
+            "grid": {"left": "2%", "right": "14%", "top": "3%", "bottom": "6%", "containLabel": True},
+            "xAxis": {
+                "type": "value", "max": round(float(x_max), 3),
+                "axisLine": {"lineStyle": {"color": "rgba(255,255,255,0.08)"}},
+                "splitLine": {"lineStyle": {"color": "rgba(255,255,255,0.04)", "type": "dashed"}},
+                "axisLabel": {"color": "#64748B", "fontSize": 10, "formatter": "__FMT_X__"}
+            },
+            "yAxis": {
+                "type": "category", "data": labels,
+                "axisLine": {"lineStyle": {"color": "rgba(255,255,255,0.08)"}},
+                "axisLabel": {"color": "#94A3B8", "fontSize": 11, "fontWeight": "600"},
+                "splitLine": {"show": False}
+            },
+            "series": [{
+                "type": "bar",
+                "data": [round(float(v), 3) for v in values],
+                "barMaxWidth": 28,
+                "itemStyle": {
+                    "color": grad,
+                    "borderRadius": [0, 6, 6, 0],
+                    "shadowBlur": 8,
+                    "shadowColor": shadow_color,
+                    "shadowOffsetX": 2,
+                },
+                "emphasis": {"itemStyle": {"shadowBlur": 18, "shadowColor": shadow_color}},
+                "label": {
+                    "show": True, "position": "right",
+                    "color": "#94A3B8", "fontSize": 10, "fontWeight": "600",
+                    "formatter": "__FMT_L__"
+                },
+            }]
         }
         js = json.dumps(opt, ensure_ascii=False)
         js = js.replace('"__FMT_X__"', '"MM$ {value}"')
@@ -802,20 +917,33 @@ with tab_pareto:
         return js
 
     with _pc1:
-        st.markdown(f'<div style="font-size:0.75rem;font-weight:700;color:{C_CRITICO};letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">🔴 Cuentas con Sobrecoste</div>', unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style="background:linear-gradient(135deg,rgba(255,71,87,0.16),rgba(255,71,87,0.04));
+                    border:1.5px solid rgba(255,71,87,0.45);border-radius:14px;
+                    padding:14px 18px;margin-bottom:14px;
+                    box-shadow:0 0 24px rgba(255,71,87,0.18);">
+          <div style="font-size:0.60rem;font-weight:800;letter-spacing:0.18em;text-transform:uppercase;
+                      color:rgba(255,71,87,0.85);margin-bottom:6px;">🔴 Cuentas con Sobrecoste</div>
+          <div style="display:flex;align-items:baseline;gap:10px;">
+            <div style="font-size:1.60rem;font-weight:900;color:#FF4757;text-shadow:0 0 16px rgba(255,71,87,0.5);">
+              MM$ {_n(tot_e,2)}</div>
+            <div style="font-size:0.72rem;color:#94A3B8;">{len(exc)} {"cuenta" if len(exc)==1 else "cuentas"} sobre ppto</div>
+          </div>
+        </div>""", unsafe_allow_html=True)
         if exc.empty:
             st.success("Ninguna cuenta supera su presupuesto.")
         else:
             exc_s = exc.sort_values("Exceso_MM", ascending=True)
-            ec_html(_ec_hbar(
+            ec_html(_ec_hbar_v2(
                 exc_s["CC_Label"].tolist(), exc_s["Exceso_MM"].tolist(),
-                C_CRITICO, C_CRITICO, _max_val * 1.28, _chart_h
+                "rgba(255,71,87,0.95)", "rgba(255,120,100,0.55)",
+                "rgba(255,71,87,0.40)", _max_val * 1.30, _chart_h
             ), height=_chart_h + 20)
             _pbl = exc[["CC_Label","Exceso_MM","Desv_Fin_%"]].copy()
             _pbl.columns = ["Cuenta de Costo","Sobrecoste (MM$)","Desvío (%)"]
             _maxe = _pbl["Sobrecoste (MM$)"].max() or 1
-            def _ce(v): return f"background:rgba(238,102,102,{v/_maxe*0.50:.2f});color:#F8FAFC;font-weight:600"
-            def _cde(v): return f"color:{C_CRITICO};font-weight:700"
+            def _ce(v): return f"background:linear-gradient(90deg,rgba(255,71,87,{v/_maxe*0.45:.2f}),transparent);color:#F8FAFC;font-weight:700"
+            def _cde(v): return "color:#FF4757;font-weight:800"
             st.dataframe(
                 _pbl.style
                     .format({"Sobrecoste (MM$)": _F2, "Desvío (%)": _FPp})
@@ -824,52 +952,71 @@ with tab_pareto:
                 use_container_width=True, hide_index=True)
 
     with _pc2:
-        st.markdown(f'<div style="font-size:0.75rem;font-weight:700;color:{C_OK};letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">🟢 Cuentas con Ahorro</div>', unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style="background:linear-gradient(135deg,rgba(35,209,96,0.14),rgba(35,209,96,0.03));
+                    border:1.5px solid rgba(35,209,96,0.40);border-radius:14px;
+                    padding:14px 18px;margin-bottom:14px;
+                    box-shadow:0 0 24px rgba(35,209,96,0.15);">
+          <div style="font-size:0.60rem;font-weight:800;letter-spacing:0.18em;text-transform:uppercase;
+                      color:rgba(35,209,96,0.85);margin-bottom:6px;">🟢 Cuentas con Ahorro</div>
+          <div style="display:flex;align-items:baseline;gap:10px;">
+            <div style="font-size:1.60rem;font-weight:900;color:#23D160;text-shadow:0 0 16px rgba(35,209,96,0.4);">
+              MM$ {_n(tot_a,2)}</div>
+            <div style="font-size:0.72rem;color:#94A3B8;">{len(aho)} {"cuenta" if len(aho)==1 else "cuentas"} bajo ppto</div>
+          </div>
+        </div>""", unsafe_allow_html=True)
         if aho.empty:
             st.warning("Ninguna cuenta está bajo presupuesto.")
         else:
             aho_s = aho.sort_values("Ahorro_MM", ascending=True)
-            ec_html(_ec_hbar(
+            ec_html(_ec_hbar_v2(
                 aho_s["CC_Label"].tolist(), aho_s["Ahorro_MM"].tolist(),
-                C_OK, C_OK, _max_val * 1.28, _chart_h
+                "rgba(35,209,96,0.92)", "rgba(80,230,140,0.50)",
+                "rgba(35,209,96,0.35)", _max_val * 1.30, _chart_h
             ), height=_chart_h + 20)
             _abl = aho[["CC_Label","Ahorro_MM","Desv_Fin_%"]].copy()
             _abl.columns = ["Cuenta de Costo","Ahorro (MM$)","Desvío (%)"]
-            def _cda(v): return f"color:{C_OK};font-weight:700"
+            _maxa = _abl["Ahorro (MM$)"].max() or 1
+            def _ca(v): return f"background:linear-gradient(90deg,rgba(35,209,96,{v/_maxa*0.38:.2f}),transparent);color:#F8FAFC;font-weight:700"
+            def _cda(v): return "color:#23D160;font-weight:800"
             st.dataframe(
                 _abl.style
                     .format({"Ahorro (MM$)": _F2, "Desvío (%)": _FPp})
+                    .map(_ca, subset=["Ahorro (MM$)"])
                     .map(_cda, subset=["Desvío (%)"]),
                 use_container_width=True, hide_index=True)
 
-    st.markdown('<div style="height:14px;"></div>', unsafe_allow_html=True)
+    st.markdown('<div style="height:16px;"></div>', unsafe_allow_html=True)
     _dif_neta    = tot_a - tot_e
     _dif_resumen = _saldo_fin / 1e6
     _match       = abs(_dif_neta - _dif_resumen) < 0.05
-    _match_color = C_OK if _match else C_ALERTA
+    _match_color = "#23D160" if _match else "#FFB300"
     _match_txt   = "✓ Cuadra con resumen" if _match else "⚠ Diferencia con resumen"
+    _dif_color   = "#23D160" if _dif_neta >= 0 else "#FF4757"
     st.markdown(f"""
-    <div style="background:rgba(255,255,255,0.022);border:1px solid rgba(255,255,255,0.07);
-                border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:0;">
-      <div style="flex:1;text-align:center;border-right:1px solid rgba(255,255,255,0.07);padding-right:16px;">
-        <div style="font-size:0.58rem;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:#475569;margin-bottom:4px;">Total Sobrecoste</div>
-        <div style="font-size:1.30rem;font-weight:800;color:{C_CRITICO};">{_n(tot_e,2,"MM$ ")}</div>
-        <div style="font-size:0.68rem;color:#475569;">{len(exc)} cuentas en rojo</div>
+    <div style="background:linear-gradient(135deg,rgba(84,112,198,0.10),rgba(84,112,198,0.03));
+                border:1.5px solid rgba(84,112,198,0.28);border-radius:16px;
+                padding:20px 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+                box-shadow:0 0 40px rgba(84,112,198,0.10),inset 0 1px 0 rgba(255,255,255,0.05);">
+      <div style="text-align:center;border-right:1px solid rgba(255,255,255,0.07);padding-right:20px;">
+        <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,71,87,0.70);margin-bottom:8px;">Total Sobrecoste</div>
+        <div style="font-size:1.55rem;font-weight:900;color:#FF4757;text-shadow:0 0 14px rgba(255,71,87,0.45);">{_n(tot_e,2,"MM$ ")}</div>
+        <div style="font-size:0.68rem;color:#475569;margin-top:4px;">{len(exc)} cuentas en rojo</div>
       </div>
-      <div style="flex:1;text-align:center;border-right:1px solid rgba(255,255,255,0.07);padding:0 16px;">
-        <div style="font-size:0.58rem;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:#475569;margin-bottom:4px;">Total Ahorro</div>
-        <div style="font-size:1.30rem;font-weight:800;color:{C_OK};">{_n(tot_a,2,"MM$ ")}</div>
-        <div style="font-size:0.68rem;color:#475569;">{len(aho)} cuentas en verde</div>
+      <div style="text-align:center;border-right:1px solid rgba(255,255,255,0.07);padding:0 20px;">
+        <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:rgba(35,209,96,0.70);margin-bottom:8px;">Total Ahorro</div>
+        <div style="font-size:1.55rem;font-weight:900;color:#23D160;text-shadow:0 0 14px rgba(35,209,96,0.40);">{_n(tot_a,2,"MM$ ")}</div>
+        <div style="font-size:0.68rem;color:#475569;margin-top:4px;">{len(aho)} cuentas en verde</div>
       </div>
-      <div style="flex:1;text-align:center;border-right:1px solid rgba(255,255,255,0.07);padding:0 16px;">
-        <div style="font-size:0.58rem;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:#475569;margin-bottom:4px;">Diferencia Neta</div>
-        <div style="font-size:1.30rem;font-weight:800;color:{'#F1F5F9' if _dif_neta>=0 else C_CRITICO};">{_n(_dif_neta,2,"MM$ ",sgn=True)}</div>
-        <div style="font-size:0.68rem;color:#475569;">saldo calculado desde CC</div>
+      <div style="text-align:center;border-right:1px solid rgba(255,255,255,0.07);padding:0 20px;">
+        <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#475569;margin-bottom:8px;">Diferencia Neta</div>
+        <div style="font-size:1.55rem;font-weight:900;color:{_dif_color};text-shadow:0 0 14px {_dif_color}44;">{_n(_dif_neta,2,"MM$ ",sgn=True)}</div>
+        <div style="font-size:0.68rem;color:#475569;margin-top:4px;">saldo calculado desde CC</div>
       </div>
-      <div style="flex:1;text-align:center;padding-left:16px;">
-        <div style="font-size:0.58rem;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:#475569;margin-bottom:4px;">Saldo Cuadro Resumen</div>
-        <div style="font-size:1.30rem;font-weight:800;color:#F1F5F9;">{_n(_dif_resumen,2,"MM$ ",sgn=True)}</div>
-        <div style="font-size:0.68rem;font-weight:700;color:{_match_color};">{_match_txt}</div>
+      <div style="text-align:center;padding-left:20px;">
+        <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#475569;margin-bottom:8px;">Saldo Cuadro Resumen</div>
+        <div style="font-size:1.55rem;font-weight:900;color:#F1F5F9;">{_n(_dif_resumen,2,"MM$ ",sgn=True)}</div>
+        <div style="font-size:0.70rem;font-weight:800;color:{_match_color};margin-top:4px;">{_match_txt}</div>
       </div>
     </div>
     """, unsafe_allow_html=True)
