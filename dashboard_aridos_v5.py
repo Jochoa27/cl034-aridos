@@ -999,13 +999,12 @@ else:
     _rev = (df_recfac_f[df_recfac_f["N_Doc_Rec"] > 0]
             .drop_duplicates(["N_OC","N_Doc_Rec"])
             [["N_OC","N_Doc_Rec","Fecha_Rec","Monto_Rec"]].copy())
-    _rev["_tot_oc"]   = _rev.groupby("N_OC")["Monto_Rec"].transform("sum")
-    _rev["Prop_Rec"]  = (_rev["Monto_Rec"].div(_rev["_tot_oc"].replace(0, float("nan"))).fillna(1.0))
 
-    df_rec_ev = (_oc_monto[["N_OC","CC","Material","Monto_Recibido"]]
-                 .merge(_rev[["N_OC","N_Doc_Rec","Fecha_Rec","Prop_Rec"]], on="N_OC", how="left")
+    # Misma fuente que RecFac KPI: Monto_Rec del archivo RecFac distribuido por CC
+    df_rec_ev = (_rev[["N_OC","N_Doc_Rec","Fecha_Rec","Monto_Rec"]]
+                 .merge(_oc_monto[["N_OC","CC","Material","Prop_CC"]], on="N_OC", how="left")
                  .dropna(subset=["Fecha_Rec"]).copy())
-    df_rec_ev["Monto_Rec"] = (df_rec_ev["Monto_Recibido"] * df_rec_ev["Prop_Rec"]).fillna(0)
+    df_rec_ev["Monto_Rec"] = (df_rec_ev["Monto_Rec"] * df_rec_ev["Prop_CC"]).fillna(0)
     df_rec_ev["CC_Label"]  = df_rec_ev["CC"].map(cc_map).fillna(df_rec_ev["CC"].fillna("Sin CC"))
     df_rec_ev["Material"]  = df_rec_ev["Material"].fillna("Sin Material")
     df_rec_ev["Mes"]       = df_rec_ev["Fecha_Rec"].dt.to_period("M").astype(str)
