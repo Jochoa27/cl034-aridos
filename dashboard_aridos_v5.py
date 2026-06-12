@@ -7,10 +7,10 @@ Base: V3 — misma lógica de datos, gráficos reemplazados con ECharts 5 via HT
 import streamlit as st
 import pandas as pd
 from pathlib import Path
-import time
 import json
 from datetime import datetime
 from streamlit.components.v1 import html as st_html
+from streamlit_autorefresh import st_autorefresh
 
 def _detectar_proyecto() -> tuple[Path, dict]:
     ROOT = Path(__file__).parent / "proyectos"
@@ -1598,5 +1598,4 @@ with tab_recfac:
         with _rf5: st.markdown(mini_kpi("FILAS EN VISTA",          f"{len(_rf_view):,}".replace(".","\x00").replace(",",".").replace("\x00",","), "documentos en vista"), unsafe_allow_html=True)
 
 # ── AUTO-REFRESCO ─────────────────────────────────────────────────────────────
-time.sleep(INTERVALO)
-st.rerun()
+st_autorefresh(interval=INTERVALO * 1000, key="data_refresh")
