@@ -573,64 +573,163 @@ else:
     _est_detail = f"{compromiso_pct:.1f}% del presupuesto comprometido · Saldo disponible MM$ {_saldo_fin/1e6:,.1f}".replace(".","\x00").replace(",",".").replace("\x00",",")
 
 # ═════════════════════════════════════════════════════════════════════════════
-# HEADER
+# HEADER — CARTA DE PRESENTACIÓN PREMIUM
 # ═════════════════════════════════════════════════════════════════════════════
+_dif_cant    = tot_cant_ppto - tot_cant_oc
+_ppto_mm     = _n(tot_ppto/1e6,           2, "MM$ ")
+_oc_mm       = _n(tot_oc/1e6,             2, "MM$ ")
+_rec_mm      = _n(tot_recibido/1e6,       2, "MM$ ")
+_sal_mm      = _n(abs(_saldo_fin)/1e6,    2, "MM$ ")
+_ppto_m3     = _n(tot_cant_ppto,           0, sfx=" m³")
+_oc_m3       = _n(tot_cant_oc,             0, sfx=" m³")
+_rec_m3      = _n(tot_cant_recibida,       0, sfx=" m³")
+_sal_m3      = _n(abs(_dif_cant),          0, sfx=" m³")
+_desv_fmt    = f"{desv_global:+.1f}%".replace(".", ",")
+_desv_c_fmt  = f"{desv_cant_global:+.1f}%".replace(".", ",")
+_ejec_fmt    = f"{ejec_pct:.1f}%".replace(".", ",")
+_avance_fmt  = f"{avance_cant_pct:.1f}%".replace(".", ",")
+_comp_fmt    = f"{compromiso_pct:.1f}%".replace(".", ",")
+_fecha_str   = datetime.fromtimestamp(max(mtime_ppto, mtime_oc)).strftime("%d/%m/%Y %H:%M")
+_hero_rgb    = "255,71,87" if compromiso_pct > 100 else ("255,179,0" if compromiso_pct >= 95 else "35,209,96")
+_oc_clr      = C_CRITICO if tot_oc >= tot_ppto else C_OK
+_sal_clr     = C_OK if _saldo_fin > 0 else C_CRITICO
+_oc_m3_clr   = C_CRITICO if tot_cant_oc >= tot_cant_ppto else C_OK
+_sal_m3_clr  = C_OK if _dif_cant > 0 else C_CRITICO
+_sal_lbl     = "disponible" if _saldo_fin > 0 else "exceso"
+_sal_m3_lbl  = "disponible" if _dif_cant > 0 else "exceso"
+_desv_clr    = "#23D160" if desv_global     >= 0 else "#FF4757"
+_desv_c_clr  = "#23D160" if desv_cant_global >= 0 else "#FF4757"
+_pb_oc_w     = f"{min(100.0, compromiso_pct):.1f}"
+_pb_rec_w    = f"{min(100.0, tot_recibido / tot_ppto * 100 if tot_ppto else 0):.1f}"
+_pb_oc_m3_w  = f"{min(100.0, tot_cant_oc / tot_cant_ppto * 100 if tot_cant_ppto else 0):.1f}"
+_pb_rec_m3_w = f"{min(100.0, tot_cant_recibida / tot_cant_ppto * 100 if tot_cant_ppto else 0):.1f}"
+_al_bg       = "rgba(255,71,87,0.13)"  if n_alertas  > 0 else "rgba(100,116,139,0.07)"
+_al_brd      = "rgba(255,71,87,0.38)"  if n_alertas  > 0 else "rgba(100,116,139,0.14)"
+_al_clr      = "#FF4757"               if n_alertas  > 0 else "#475569"
+_sp_bg       = "rgba(255,71,87,0.13)"  if n_sin_ppto > 0 else "rgba(100,116,139,0.07)"
+_sp_brd      = "rgba(255,71,87,0.38)"  if n_sin_ppto > 0 else "rgba(100,116,139,0.14)"
+_sp_clr      = "#FF4757"               if n_sin_ppto > 0 else "#475569"
+
 st.markdown(f"""
-<div style="display:flex;align-items:baseline;gap:14px;margin-bottom:16px;padding-bottom:12px;
-            border-bottom:1px solid rgba(255,255,255,0.07);">
-  <div style="display:flex;flex-direction:column;gap:2px;">
-    <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#38BDF8;">CONSTRUCTORA LONDRES</div>
-    <div style="font-size:1.55rem;font-weight:900;color:#F8FAFC;letter-spacing:0.02em;">🏗️ CONTROL DE ÁRIDOS</div>
+<div style="background:linear-gradient(90deg,rgba(56,189,248,0.08),rgba(56,189,248,0.02) 55%,transparent);
+            border:1px solid rgba(56,189,248,0.15);border-radius:18px;padding:16px 22px;margin-bottom:18px;
+            display:flex;align-items:center;gap:16px;">
+  <div>
+    <div style="font-size:0.57rem;font-weight:800;letter-spacing:0.24em;text-transform:uppercase;color:#38BDF8;margin-bottom:2px;">CONSTRUCTORA LONDRES</div>
+    <div style="font-size:1.48rem;font-weight:900;color:#F8FAFC;letter-spacing:0.01em;line-height:1.1;">🏗️ CONTROL DE ÁRIDOS</div>
   </div>
-  <div style="font-size:0.82rem;font-weight:600;color:#334155;letter-spacing:0.05em;">{PROYECTO_CODIGO} — {PROYECTO_NOMBRE}</div>
-  <div style="margin-left:auto;font-size:0.69rem;color:#1E293B;background:rgba(255,255,255,0.03);
-              border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:3px 10px;letter-spacing:0.04em;">
-    DATOS AL {datetime.fromtimestamp(max(mtime_ppto,mtime_oc)).strftime("%d/%m/%Y %H:%M")}
+  <div style="width:1px;height:38px;background:rgba(56,189,248,0.20);flex-shrink:0;"></div>
+  <div style="background:rgba(56,189,248,0.09);border:1px solid rgba(56,189,248,0.22);border-radius:10px;padding:6px 14px;">
+    <div style="font-size:0.55rem;font-weight:700;letter-spacing:0.13em;color:#64748B;">PROYECTO</div>
+    <div style="font-size:0.90rem;font-weight:800;color:#F1F5F9;">{PROYECTO_CODIGO} · {PROYECTO_NOMBRE}</div>
+  </div>
+  <div style="flex:1;"></div>
+  <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;">
+    <div style="background:{_al_bg};border:1px solid {_al_brd};border-radius:8px;padding:5px 12px;font-size:0.70rem;font-weight:700;color:{_al_clr};">⚠ {n_alertas} alertas</div>
+    <div style="background:{_sp_bg};border:1px solid {_sp_brd};border-radius:8px;padding:5px 12px;font-size:0.70rem;font-weight:700;color:{_sp_clr};">🔴 {n_sin_ppto} sin ppto</div>
+    <div style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:5px 12px;font-size:0.67rem;color:#334155;">📅 {_fecha_str}</div>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 2.25fr;gap:18px;margin-bottom:18px;">
+  <div style="background:linear-gradient(145deg,rgba({_hero_rgb},0.18) 0%,rgba({_hero_rgb},0.04) 100%);
+              border:1.5px solid rgba({_hero_rgb},0.50);
+              box-shadow:0 0 64px rgba({_hero_rgb},0.15),inset 0 0 40px rgba({_hero_rgb},0.04);
+              border-radius:20px;padding:26px 22px;display:flex;flex-direction:column;justify-content:center;gap:12px;">
+    <div style="font-size:0.57rem;font-weight:800;letter-spacing:0.22em;text-transform:uppercase;color:rgba({_hero_rgb},0.65);">ESTADO DEL PROYECTO</div>
+    <div style="font-size:3.0rem;font-weight:900;line-height:1.0;letter-spacing:0.02em;color:rgb({_hero_rgb});
+                text-shadow:0 0 32px rgba({_hero_rgb},0.65),0 0 72px rgba({_hero_rgb},0.28);">{_est_txt}</div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
+        <span style="font-size:0.59rem;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:#475569;">COMPROMISO PRESUPUESTO</span>
+        <span style="font-size:0.88rem;font-weight:900;color:rgb({_hero_rgb});text-shadow:0 0 12px rgba({_hero_rgb},0.50);">{_comp_fmt}</span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,0.055);border-radius:99px;overflow:hidden;">
+        <div style="height:100%;width:{_pb_oc_w}%;border-radius:99px;
+                    background:linear-gradient(90deg,rgb({_hero_rgb}),rgba({_hero_rgb},0.38));
+                    box-shadow:0 0 12px rgba({_hero_rgb},0.60);"></div>
+      </div>
+    </div>
+    <div style="font-size:0.71rem;color:rgba(255,255,255,0.40);line-height:1.55;border-top:1px solid rgba({_hero_rgb},0.14);padding-top:10px;">{_est_detail}</div>
+    <div style="display:flex;gap:20px;">
+      <div style="text-align:center;">
+        <div style="font-size:1.15rem;font-weight:800;color:#38BDF8;text-shadow:0 0 12px rgba(56,189,248,0.40);">{n_activas}</div>
+        <div style="font-size:0.55rem;font-weight:700;color:#334155;letter-spacing:0.10em;text-transform:uppercase;">OC activas</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:1.15rem;font-weight:800;color:{_al_clr};text-shadow:0 0 10px {_al_clr}44;">{n_alertas}</div>
+        <div style="font-size:0.55rem;font-weight:700;color:#334155;letter-spacing:0.10em;text-transform:uppercase;">alertas</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:1.15rem;font-weight:800;color:{_sp_clr};text-shadow:0 0 10px {_sp_clr}44;">{n_sin_ppto}</div>
+        <div style="font-size:0.55rem;font-weight:700;color:#334155;letter-spacing:0.10em;text-transform:uppercase;">sin ppto</div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div style="display:flex;align-items:center;gap:9px;">
+      <div style="width:18px;height:2.5px;background:#38BDF8;border-radius:2px;box-shadow:0 0 8px #38BDF8;flex-shrink:0;"></div>
+      <div style="font-size:0.62rem;font-weight:800;letter-spacing:0.18em;text-transform:uppercase;color:#38BDF8;">💰 FINANCIERO (MM$)</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div style="background:linear-gradient(135deg,rgba(84,112,198,0.14),rgba(84,112,198,0.03));border:1px solid rgba(84,112,198,0.30);border-radius:14px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:0.55rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#475569;">PRESUPUESTO</div>
+        <div style="font-size:1.32rem;font-weight:900;color:#7C9FE4;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 16px rgba(84,112,198,0.42);">{_ppto_mm}</div>
+        <div style="font-size:0.62rem;color:#334155;">referencia base</div>
+        <div style="margin-top:8px;height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"><div style="height:100%;width:100%;background:linear-gradient(90deg,#5470c6,rgba(84,112,198,0.38));border-radius:99px;box-shadow:0 0 6px rgba(84,112,198,0.50);"></div></div>
+      </div>
+      <div style="background:linear-gradient(135deg,{_oc_clr}22,{_oc_clr}06);border:1px solid {_oc_clr}44;border-radius:14px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:0.55rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#475569;">OC EFECTIVO</div>
+        <div style="font-size:1.32rem;font-weight:900;color:{_oc_clr};line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 16px {_oc_clr}88;">{_oc_mm}</div>
+        <div style="font-size:0.62rem;color:{_desv_clr};font-weight:600;">{_desv_fmt} vs ppto</div>
+        <div style="margin-top:8px;height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"><div style="height:100%;width:{_pb_oc_w}%;background:linear-gradient(90deg,{_oc_clr},{_oc_clr}55);border-radius:99px;box-shadow:0 0 6px {_oc_clr};"></div></div>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(56,189,248,0.14),rgba(56,189,248,0.03));border:1px solid rgba(56,189,248,0.26);border-radius:14px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:0.55rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#475569;">RECIBIDO</div>
+        <div style="font-size:1.32rem;font-weight:900;color:#38BDF8;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 16px rgba(56,189,248,0.52);">{_rec_mm}</div>
+        <div style="font-size:0.62rem;color:#38BDF8;font-weight:600;">{_ejec_fmt} ejecutado</div>
+        <div style="margin-top:8px;height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"><div style="height:100%;width:{_pb_rec_w}%;background:linear-gradient(90deg,#38BDF8,rgba(56,189,248,0.48));border-radius:99px;box-shadow:0 0 6px rgba(56,189,248,0.58);"></div></div>
+      </div>
+      <div style="background:linear-gradient(135deg,{_sal_clr}22,{_sal_clr}06);border:1px solid {_sal_clr}40;border-radius:14px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:0.55rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#475569;">SALDO PPTO</div>
+        <div style="font-size:1.32rem;font-weight:900;color:{_sal_clr};line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 16px {_sal_clr}88;">{_sal_mm}</div>
+        <div style="font-size:0.62rem;color:{_sal_clr};font-weight:600;">{_sal_lbl}</div>
+        <div style="margin-top:8px;height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;">
+      <div style="width:18px;height:2.5px;background:#A78BFA;border-radius:2px;box-shadow:0 0 8px #A78BFA;flex-shrink:0;"></div>
+      <div style="font-size:0.62rem;font-weight:800;letter-spacing:0.18em;text-transform:uppercase;color:#A78BFA;">📦 CANTIDADES (m³)</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div style="background:linear-gradient(135deg,rgba(84,112,198,0.14),rgba(84,112,198,0.03));border:1px solid rgba(84,112,198,0.30);border-radius:14px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:0.55rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#475569;">PRESUPUESTO</div>
+        <div style="font-size:1.25rem;font-weight:900;color:#7C9FE4;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(84,112,198,0.38);">{_ppto_m3}</div>
+        <div style="font-size:0.62rem;color:#334155;">referencia base</div>
+        <div style="margin-top:8px;height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"><div style="height:100%;width:100%;background:linear-gradient(90deg,#5470c6,rgba(84,112,198,0.38));border-radius:99px;box-shadow:0 0 6px rgba(84,112,198,0.50);"></div></div>
+      </div>
+      <div style="background:linear-gradient(135deg,{_oc_m3_clr}22,{_oc_m3_clr}06);border:1px solid {_oc_m3_clr}44;border-radius:14px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:0.55rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#475569;">OC EFECTIVO</div>
+        <div style="font-size:1.25rem;font-weight:900;color:{_oc_m3_clr};line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 14px {_oc_m3_clr}88;">{_oc_m3}</div>
+        <div style="font-size:0.62rem;color:{_desv_c_clr};font-weight:600;">{_desv_c_fmt} vs ppto</div>
+        <div style="margin-top:8px;height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"><div style="height:100%;width:{_pb_oc_m3_w}%;background:linear-gradient(90deg,{_oc_m3_clr},{_oc_m3_clr}55);border-radius:99px;box-shadow:0 0 6px {_oc_m3_clr};"></div></div>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(167,139,250,0.14),rgba(167,139,250,0.03));border:1px solid rgba(167,139,250,0.25);border-radius:14px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:0.55rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#475569;">RECIBIDO</div>
+        <div style="font-size:1.25rem;font-weight:900;color:#A78BFA;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(167,139,250,0.48);">{_rec_m3}</div>
+        <div style="font-size:0.62rem;color:#A78BFA;font-weight:600;">{_avance_fmt} recepcionado</div>
+        <div style="margin-top:8px;height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"><div style="height:100%;width:{_pb_rec_m3_w}%;background:linear-gradient(90deg,#A78BFA,rgba(167,139,250,0.48));border-radius:99px;box-shadow:0 0 6px rgba(167,139,250,0.52);"></div></div>
+      </div>
+      <div style="background:linear-gradient(135deg,{_sal_m3_clr}22,{_sal_m3_clr}06);border:1px solid {_sal_m3_clr}40;border-radius:14px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:0.55rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#475569;">SALDO</div>
+        <div style="font-size:1.25rem;font-weight:900;color:{_sal_m3_clr};line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 14px {_sal_m3_clr}88;">{_sal_m3}</div>
+        <div style="font-size:0.62rem;color:{_sal_m3_clr};font-weight:600;">{_sal_m3_lbl}</div>
+        <div style="margin-top:8px;height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;"></div>
+      </div>
+    </div>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-_col_badge, _col_kpis = st.columns([1, 2.6], gap="large")
-with _col_badge:
-    st.markdown(f"""
-    <div class="stat-wrap {_est_css}">
-      <div class="stat-lbl">ESTADO DEL PROYECTO</div>
-      <div class="stat-val" style="color:{_est_color};">{_est_txt}</div>
-      <div class="stat-sub">{_est_detail}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with _col_kpis:
-    st.markdown('<div class="row-lbl">💰 FINANCIERO</div>', unsafe_allow_html=True)
-    kpi_row([
-        ("Presupuesto", _n(tot_ppto/1e6, 1, "MM$ "), None, None),
-        ("OC Efectivo",
-         f'<span style="color:{C_CRITICO if tot_oc >= tot_ppto else C_OK};">{_n(tot_oc/1e6,1,"MM$ ")}</span>',
-         f"{desv_global:+.1f}% vs ppto".replace(".",","), desv_global >= 0),
-        ("Recibido",
-         f'<span style="color:{C_CRITICO if tot_recibido >= tot_ppto else C_OK};">{_n(tot_recibido/1e6,1,"MM$ ")}</span>',
-         f"{ejec_pct:.1f}% ejecutado".replace(".",","), None),
-        ("Dif. PPTO − OC",
-         f'<span style="color:{C_OK if _saldo_fin > 0 else C_CRITICO};">{_n(_saldo_fin/1e6,1,"MM$ ",sgn=True)}</span>',
-         None, None),
-    ])
-    st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="row-lbl">📦 CANTIDADES</div>', unsafe_allow_html=True)
-    _dif_cant = tot_cant_ppto - tot_cant_oc
-    kpi_row([
-        ("Presupuesto", _n(tot_cant_ppto, 0, sfx=" m³"), None, None),
-        ("OC Efectivo",
-         f'<span style="color:{C_CRITICO if tot_cant_oc >= tot_cant_ppto else C_OK};">{_n(tot_cant_oc,0,sfx=" m³")}</span>',
-         f"{desv_cant_global:+.1f}% vs ppto".replace(".",","), desv_cant_global >= 0),
-        ("Recibido",
-         f'<span style="color:{C_CRITICO if tot_cant_recibida >= tot_cant_ppto else C_OK};">{_n(tot_cant_recibida,0,sfx=" m³")}</span>',
-         f"{avance_cant_pct:.1f}% recepcionado".replace(".",","), None),
-        ("Dif. PPTO − OC",
-         f'<span style="color:{C_OK if _dif_cant > 0 else C_CRITICO};">{_n(_dif_cant,0,sfx=" m³",sgn=True)}</span>',
-         None, None),
-    ])
-
-st.markdown('<div style="height:14px;"></div>', unsafe_allow_html=True)
 _n_res = max(len(resumen), 1)
 ring_row([
     ("Compromiso Ppto",
@@ -654,7 +753,6 @@ ring_row([
      "CCs con gasto sin ppto",
      C_CRITICO if n_sin_ppto > 0 else C_OK),
 ])
-
 st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
 st.divider()
 
