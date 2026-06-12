@@ -1145,14 +1145,14 @@ def _build_avance_charts(df_grp, label_col):
         o_d = [round(float(v), 2) for v in vals_oc]
         r_d = [round(float(v), 2) for v in vals_rec]
         _grad_ppto = {"type": "linear", "x": 0, "y": 0, "x2": 1, "y2": 0,
-                      "colorStops": [{"offset": 0, "color": "rgba(84,112,198,0.55)"},
-                                     {"offset": 1, "color": "rgba(84,112,198,0.12)"}]}
+                      "colorStops": [{"offset": 0, "color": "rgba(120,100,255,0.88)"},
+                                     {"offset": 1, "color": "rgba(84,112,198,0.32)"}]}
         _grad_oc   = {"type": "linear", "x": 0, "y": 0, "x2": 1, "y2": 0,
-                      "colorStops": [{"offset": 0, "color": "rgba(252,132,82,1.0)"},
-                                     {"offset": 1, "color": "rgba(252,195,82,0.85)"}]}
+                      "colorStops": [{"offset": 0, "color": "rgba(255,100,60,1.0)"},
+                                     {"offset": 1, "color": "rgba(255,185,0,0.95)"}]}
         _grad_rec  = {"type": "linear", "x": 0, "y": 0, "x2": 1, "y2": 0,
-                      "colorStops": [{"offset": 0, "color": "rgba(56,189,248,0.98)"},
-                                     {"offset": 1, "color": "rgba(115,192,222,0.70)"}]}
+                      "colorStops": [{"offset": 0, "color": "rgba(35,209,96,1.0)"},
+                                     {"offset": 1, "color": "rgba(35,209,96,0.58)"}]}
         opt = {
             "backgroundColor": "transparent",
             "animation": True, "animationDuration": 900, "animationEasing": "cubicOut",
@@ -1181,17 +1181,17 @@ def _build_avance_charts(df_grp, label_col):
             "series": [
                 {"name": "Presupuestado", "type": "bar", "data": p_d, "barWidth": "55%",
                  "itemStyle": {"color": _grad_ppto, "borderRadius": [0, 4, 4, 0]},
-                 "emphasis": {"itemStyle": {"color": "rgba(84,112,198,0.70)"}},
+                 "emphasis": {"itemStyle": {"shadowBlur": 14, "shadowColor": "rgba(120,100,255,0.55)"}},
                  "z": 1, "label": {"show": False}},
                 {"name": "OC Efectivo", "type": "bar", "data": o_d, "barWidth": "38%",
                  "barGap": "-100%",
                  "itemStyle": {"color": _grad_oc, "borderRadius": [0, 4, 4, 0]},
-                 "emphasis": {"itemStyle": {"shadowBlur": 12, "shadowColor": "rgba(252,132,82,0.45)"}},
+                 "emphasis": {"itemStyle": {"shadowBlur": 14, "shadowColor": "rgba(255,100,60,0.60)"}},
                  "z": 2, "label": {"show": False}},
                 {"name": "Recibido", "type": "bar", "data": r_d, "barWidth": "20%",
                  "barGap": "-100%",
                  "itemStyle": {"color": _grad_rec, "borderRadius": [0, 4, 4, 0]},
-                 "emphasis": {"itemStyle": {"shadowBlur": 10, "shadowColor": "rgba(56,189,248,0.45)"}},
+                 "emphasis": {"itemStyle": {"shadowBlur": 14, "shadowColor": "rgba(35,209,96,0.60)"}},
                  "z": 3, "label": {"show": False}},
             ]
         }
