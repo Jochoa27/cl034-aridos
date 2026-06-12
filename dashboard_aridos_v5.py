@@ -573,10 +573,27 @@ tot_ppto          = resumen["Monto_Ppto"].sum()
 tot_oc            = resumen["Monto_OC"].sum()
 # Usar RecFac como fuente de verdad para Recibido y OC en sistema
 if not df_recfac_f.empty:
+    # Recepciones únicas (sin duplicar por doc)
     _rec_docs_kpi = df_recfac_f[df_recfac_f["N_Doc_Rec"] > 0].drop_duplicates(["N_OC","N_Doc_Rec"])
     tot_recibido  = _rec_docs_kpi["Monto_Rec"].sum()
-    # OC en sistema = Total_OC por OC única (campo nativo del reporte RecFac)
-    _oc_recfac    = df_recfac_f.drop_duplicates("N_OC")["Total_OC"].sum()
+
+    # Estado por N_OC desde el archivo OC (str para coincidir con RecFac)
+    _oc_estado_map = dict(zip(df_oc_f["N_OC"].astype(str).str.strip(), df_oc_f["Estado"]))
+
+    # Suma de recepciones reales por N_OC (para OCs cerradas)
+    _rec_por_oc = _rec_docs_kpi.groupby("N_OC")["Monto_Rec"].sum()
+
+    # Una fila por N_OC en RecFac — Total_OC no se repite al sumar
+    _oc_unicas = df_recfac_f.drop_duplicates("N_OC")[["N_OC","Total_OC"]].copy()
+    _oc_unicas["Estado"] = _oc_unicas["N_OC"].map(_oc_estado_map).fillna("Abierta")
+
+    # Cerrada → monto efectivo = lo realmente recibido (OC ya no generará más recepciones)
+    # Abierta → monto comprometido = Total_OC completo
+    _oc_unicas["Monto_Ef"] = _oc_unicas.apply(
+        lambda r: _rec_por_oc.get(r["N_OC"], r["Total_OC"])
+                  if r["Estado"] == "Cerrada" else r["Total_OC"], axis=1)
+
+    _oc_recfac = _oc_unicas["Monto_Ef"].sum()
     if _oc_recfac > 0:
         tot_oc = _oc_recfac
     # Invariante: OC nunca menor a lo recepcionado
