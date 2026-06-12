@@ -755,25 +755,24 @@ _score_rgb     = "35,209,96" if _rsk_score >= 15 else ("255,179,0" if _rsk_score
 st.markdown(f"""
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">
   <div style="background:linear-gradient(135deg,rgba(255,71,87,0.18) 0%,rgba(255,71,87,0.05) 100%);
-              border:1.5px solid rgba(255,71,87,0.55);border-radius:16px;padding:18px 20px;
-              box-shadow:0 0 32px rgba(255,71,87,0.22),inset 0 1px 0 rgba(255,255,255,0.06);">
-    <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;color:rgba(255,71,87,0.85);margin-bottom:10px;">CC Críticas</div>
-    <div style="font-size:2.4rem;font-weight:900;color:#FF4757;line-height:1;text-shadow:0 0 20px rgba(255,71,87,0.6);">{n_cc_criticas}</div>
-    <div style="font-size:0.68rem;color:#94A3B8;margin-top:6px;">cuentas sobre presupuesto</div>
+              border:1.5px solid rgba(255,71,87,0.55);border-radius:14px;padding:14px 16px 12px;
+              box-shadow:0 0 24px rgba(255,71,87,0.20),inset 0 1px 0 rgba(255,255,255,0.05);">
+    <div style="font-size:0.55rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,71,87,0.85);margin-bottom:6px;">CC Críticas</div>
+    <div style="font-size:1.55rem;font-weight:900;color:#FF4757;line-height:1;text-shadow:0 0 16px rgba(255,71,87,0.55);">{n_cc_criticas}</div>
+    <div style="font-size:0.62rem;color:#64748B;margin-top:4px;">cuentas sobre presupuesto</div>
   </div>
   <div style="background:linear-gradient(135deg,rgba(255,179,0,0.15) 0%,rgba(255,179,0,0.04) 100%);
-              border:1.5px solid rgba(255,179,0,0.50);border-radius:16px;padding:18px 20px;
-              box-shadow:0 0 32px rgba(255,179,0,0.18),inset 0 1px 0 rgba(255,255,255,0.06);">
-    <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;color:rgba(255,179,0,0.90);margin-bottom:10px;">Exposición Total</div>
-    <div style="font-size:2.0rem;font-weight:900;color:#FFB300;line-height:1;text-shadow:0 0 20px rgba(255,179,0,0.5);">{_rsk_total_exp_fmt}</div>
-    <div style="font-size:0.68rem;color:#94A3B8;margin-top:6px;">monto en zona de exceso</div>
+              border:1.5px solid rgba(255,179,0,0.50);border-radius:14px;padding:14px 16px 12px;
+              box-shadow:0 0 24px rgba(255,179,0,0.16),inset 0 1px 0 rgba(255,255,255,0.05);">
+    <div style="font-size:0.55rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,179,0,0.90);margin-bottom:6px;">Exposición Total</div>
+    <div style="font-size:1.42rem;font-weight:900;color:#FFB300;line-height:1;text-shadow:0 0 16px rgba(255,179,0,0.48);">{_rsk_total_exp_fmt}</div>
+    <div style="font-size:0.62rem;color:#64748B;margin-top:4px;">monto en zona de exceso</div>
   </div>
-  <div style="background:linear-gradient(135deg,rgba(255,71,87,0.12) 0%,rgba(15,23,42,0.0) 100%);
-              border:1.5px solid rgba(255,255,255,0.10);border-radius:16px;padding:18px 20px;
-              box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);">
-    <div style="font-size:0.58rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;color:#64748B;margin-bottom:10px;">Mayor Desvío</div>
-    <div style="font-size:1.05rem;font-weight:800;color:#FF4757;line-height:1.2;text-shadow:0 0 16px rgba(255,71,87,0.4);">{_worst_lbl}</div>
-    <div style="font-size:0.78rem;font-weight:700;color:#FF4757;margin-top:6px;">{_worst_desv:+.1f}% vs ppto</div>
+  <div style="background:linear-gradient(135deg,rgba(255,71,87,0.10) 0%,rgba(15,23,42,0.0) 100%);
+              border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:14px 16px 12px;">
+    <div style="font-size:0.55rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#64748B;margin-bottom:6px;">Mayor Desvío</div>
+    <div style="font-size:0.95rem;font-weight:800;color:#FF4757;line-height:1.25;text-shadow:0 0 12px rgba(255,71,87,0.38);">{_worst_lbl}</div>
+    <div style="font-size:0.70rem;font-weight:700;color:#FF4757;margin-top:4px;">{_worst_desv:+.1f}% vs ppto</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
