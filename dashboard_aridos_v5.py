@@ -542,7 +542,12 @@ global_cc = global_cc.sort_values("Desv_Fin_%", ascending=True)
 # ── KPIs ──────────────────────────────────────────────────────────────────────
 tot_ppto          = resumen["Monto_Ppto"].sum()
 tot_oc            = resumen["Monto_OC"].sum()
-tot_recibido      = resumen["Monto_Recibido"].sum()
+# Usar RecFac como fuente de verdad (misma lógica que sección Recepción y Facturación)
+if not df_recfac_f.empty:
+    _rec_docs_kpi = df_recfac_f[df_recfac_f["N_Doc_Rec"] > 0].drop_duplicates(["N_OC","N_Doc_Rec"])
+    tot_recibido  = _rec_docs_kpi["Monto_Rec"].sum()
+else:
+    tot_recibido  = resumen["Monto_Recibido"].sum()
 tot_cant_ppto     = resumen["Cant_Ppto"].sum()
 tot_cant_oc       = resumen["Cant_OC"].sum()
 tot_cant_recibida = resumen["Cant_Recibida"].sum()
