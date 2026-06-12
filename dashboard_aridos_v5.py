@@ -176,6 +176,7 @@ CARPETA        = _CARPETA_PROYECTO
 ARCHIVO_PPTO   = CARPETA / _CFG["archivo_ppto"]
 ARCHIVO_OC     = CARPETA / "Descarga_IConstruye.xlsx"
 ARCHIVO_RECFAC = CARPETA / "Recepcion_Facturación_OC.xlsx"
+ARCHIVO_NC     = CARPETA / "ReporteControlNotasCorreccion.xlsx"
 INTERVALO      = 60
 
 PALABRAS_ARIDOS = ["arena","grava","bolón","bolon","integral",
@@ -409,6 +410,22 @@ def cargar_recfac(mtime):
     return df
 
 @st.cache_data
+def cargar_nc(mtime):
+    """Carga notas de crédito/corrección y devuelve mapa {N_Factura → Monto_NC_total}."""
+    try:
+        df = pd.read_excel(ARCHIVO_NC, sheet_name="Documentos_Notas_Correccion", header=7)
+        df["_fac"] = pd.to_numeric(
+            df["Facturas Asociadas a NC"].astype(str).str.strip(), errors="coerce")
+        df["Monto_NC"] = pd.to_numeric(
+            df["Monto Total"].astype(str)
+              .str.replace(".", "", regex=False)
+              .str.replace(",", ".", regex=False),
+            errors="coerce").fillna(0)
+        return df.dropna(subset=["_fac"]).groupby("_fac")["Monto_NC"].sum()
+    except Exception:
+        return pd.Series(dtype=float)
+
+@st.cache_data
 def cargar_oc(mtime):
     df = pd.read_excel(ARCHIVO_OC, sheet_name=0, header=None, skiprows=12)
     df.columns = ["N_OC","Nombre_OC","Fecha","Fecha_Despacho","Metodo_Despacho","Obra",
@@ -444,6 +461,12 @@ try:
     df_recfac = cargar_recfac(mtime_rf)
 except FileNotFoundError:
     df_recfac = pd.DataFrame()
+
+try:
+    mtime_nc  = ARCHIVO_NC.stat().st_mtime
+    nc_by_fac = cargar_nc(mtime_nc)
+except FileNotFoundError:
+    nc_by_fac = pd.Series(dtype=float)
 
 # ── SIDEBAR ───────────────────────────────────────────────────────────────────
 with st.sidebar:
@@ -1282,17 +1305,20 @@ with tab_recfac:
         _df_con_fac = _df_rec_docs[_df_rec_docs["N_Factura"] > 0]
         _n_rec_fac_no_apr = (~_df_con_fac["Estado_Doc_Fac"].astype(str).str.strip().isin(_APROBADOS)).sum()
 
-        # Alerta: facturación aprobada > recepcionado (por OC)
-        _rec_by_oc = _df_rec_docs.groupby("N_OC")["Monto_Rec"].sum()
-        _fac_by_oc = (df_recfac_f[(df_recfac_f["N_Factura"] > 0) &
+        # Alerta: facturación aprobada (neta de NC) > recepcionado (por OC)
+        _rec_by_oc  = _df_rec_docs.groupby("N_OC")["Monto_Rec"].sum()
+        _fac_base_a = (df_recfac_f[(df_recfac_f["N_Factura"] > 0) &
                                     df_recfac_f["Estado_Doc_Fac"].astype(str).str.strip().isin(_APROBADOS)]
-                      .drop_duplicates("N_Factura")
-                      .groupby("N_OC")["Monto_Factura"].sum())
+                       .drop_duplicates("N_Factura")[["N_OC","N_Factura","Monto_Factura"]].copy())
+        _fac_base_a["Monto_NC"]   = _fac_base_a["N_Factura"].map(nc_by_fac).fillna(0)
+        _fac_base_a["Monto_Neto"] = (_fac_base_a["Monto_Factura"] - _fac_base_a["Monto_NC"]).clip(lower=0)
+        _fac_by_oc  = _fac_base_a.groupby("N_OC")["Monto_Neto"].sum()
         _ocs_fac_mayor_rec = {
             oc for oc in _fac_by_oc.index
             if _fac_by_oc.get(oc, 0) > _rec_by_oc.get(oc, 0) + 1000
         }
-        _n_fac_mayor_rec = len(_ocs_fac_mayor_rec)
+        _n_fac_mayor_rec  = len(_ocs_fac_mayor_rec)
+        _tot_nc_mm        = nc_by_fac.sum() / 1e6 if not nc_by_fac.empty else 0
 
         _fc1, _fc2, _ = st.columns([1, 1, 2])
         with _fc1:
@@ -1344,10 +1370,12 @@ with tab_recfac:
                          type="primary" if _rsel=="fac_mayor_rec" else "secondary"):
                 st.session_state["rf_filtro"] = "fac_mayor_rec"; st.rerun()
 
+        _tot_fac_neto_mm = (_fac_base_a["Monto_Neto"].sum() / 1e6) if not _fac_base_a.empty else _tot_fac_mm
         st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
-        _rk5,_rk6,_rk7,_rk8 = st.columns(4)
-        with _rk5: st.markdown(mini_kpi("TOTAL RECIBIDO",  f"MM$ {_tot_rec_mm:,.1f}".replace(".","\x00").replace(",",".").replace("\x00",","), "suma docs recepción"), unsafe_allow_html=True)
-        with _rk6: st.markdown(mini_kpi("TOTAL FACTURADO", f"MM$ {_tot_fac_mm:,.1f}".replace(".","\x00").replace(",",".").replace("\x00",","), "facturas deduplicadas"), unsafe_allow_html=True)
+        _rk5,_rk6,_rk6b,_rk7,_rk8 = st.columns(5)
+        with _rk5: st.markdown(mini_kpi("TOTAL RECIBIDO",    f"MM$ {_tot_rec_mm:,.1f}".replace(".","\x00").replace(",",".").replace("\x00",","), "suma docs recepción"), unsafe_allow_html=True)
+        with _rk6: st.markdown(mini_kpi("FAC. BRUTA",        f"MM$ {_tot_fac_mm:,.1f}".replace(".","\x00").replace(",",".").replace("\x00",","), "facturas aprobadas"), unsafe_allow_html=True)
+        with _rk6b: st.markdown(mini_kpi("FAC. NETA (−NC)",  f"MM$ {_tot_fac_neto_mm:,.1f}".replace(".","\x00").replace(",",".").replace("\x00",","), f"NC: MM$ {_tot_nc_mm:,.1f}".replace(".","\x00").replace(",",".").replace("\x00",","), color=C_OK), unsafe_allow_html=True)
         with _rk7:
             if st.button(f"RECEP. SIN FACTURA\n{_n_rec_sin_fac} docs\nsin factura asociada",
                          key="rf_sin_fac", use_container_width=True, type="primary" if _rsel=="sin_fac" else "secondary"):
