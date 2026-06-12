@@ -731,29 +731,6 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 _n_res = max(len(resumen), 1)
-ring_row([
-    ("Compromiso Ppto",
-     min(compromiso_pct, 100),
-     f"{compromiso_pct:.1f}%".replace(".", ","),
-     "OC / Presupuesto",
-     C_CRITICO if compromiso_pct > 100 else C_ALERTA if compromiso_pct >= 95 else C_OK),
-    ("Ejecución Recep.",
-     min(ejec_pct, 100),
-     f"{ejec_pct:.1f}%".replace(".", ","),
-     "Recibido / OC efectivo",
-     "#38BDF8"),
-    ("Alertas Críticas",
-     n_alertas / _n_res * 100,
-     str(n_alertas),
-     "ítems sobre umbral",
-     C_CRITICO if n_alertas > 0 else C_OK),
-    ("Sin Presupuesto",
-     n_sin_ppto / _n_res * 100,
-     str(n_sin_ppto),
-     "CCs con gasto sin ppto",
-     C_CRITICO if n_sin_ppto > 0 else C_OK),
-])
-st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
 st.divider()
 
 # ═════════════════════════════════════════════════════════════════════════════
