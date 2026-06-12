@@ -1385,12 +1385,19 @@ with tab_recfac:
                          key="rf_sin_fac_apr", use_container_width=True, type="primary" if _rsel=="sin_fac_apr" else "secondary"):
                 st.session_state["rf_filtro"] = "sin_fac_apr"; st.rerun()
 
+        # Tabla de visualización: mostrar Monto_Factura solo en la primera fila
+        # de cada factura (IConstruye repite el total de la factura en cada doc de recepción)
+        _rf_display = _rf_view.copy()
+        _dup_fac = _rf_display["N° Factura"].gt(0) & _rf_display["N° Factura"].duplicated()
+        _rf_display.loc[_dup_fac, ["Monto Factura ($)", "Fecha Recep. Factura",
+                                    "Estado Factura", "Estado Asociación"]] = float("nan")
+
         st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
         def _row_fac_mayor(row):
             bg = "background-color:rgba(238,102,102,0.13);" if row["Alerta"] == "⚠ FAC>REC" else ""
             return [bg] * len(row)
         st.dataframe(
-            _rf_view.style
+            _rf_display.style
                .apply(_row_fac_mayor, axis=1)
                .format({"N° Doc. Recepción":_FI, "N° Factura":_FI,
                         "Monto Recibido ($)":_FS0, "Saldo x Recibir ($)":_FS0,
