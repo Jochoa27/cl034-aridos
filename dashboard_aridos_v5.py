@@ -1305,20 +1305,21 @@ with tab_recfac:
         _df_con_fac = _df_rec_docs[_df_rec_docs["N_Factura"] > 0]
         _n_rec_fac_no_apr = (~_df_con_fac["Estado_Doc_Fac"].astype(str).str.strip().isin(_APROBADOS)).sum()
 
-        # Alerta: facturación aprobada (neta de NC) > recepcionado (por OC)
-        _rec_by_oc  = _df_rec_docs.groupby("N_OC")["Monto_Rec"].sum()
-        _fac_base_a = (df_recfac_f[(df_recfac_f["N_Factura"] > 0) &
-                                    df_recfac_f["Estado_Doc_Fac"].astype(str).str.strip().isin(_APROBADOS)]
-                       .drop_duplicates("N_Factura")[["N_OC","N_Factura","Monto_Factura"]].copy())
+        # Alerta: comparación POR FACTURA — Monto_Neto vs suma de recepciones de esa factura
+        # (evita falsos positivos cuando una factura cubre múltiples docs de recepción)
+        _tot_nc_mm = nc_by_fac.sum() / 1e6 if not nc_by_fac.empty else 0
+        _fac_base_a = (df_recfac_f[df_recfac_f["N_Factura"] > 0]
+                       .groupby("N_Factura").agg(
+                           N_OC=("N_OC", "first"),
+                           Monto_Factura=("Monto_Factura", "first"),
+                           Sum_Rec_Fac=("Monto_Rec", "sum")
+                       ).reset_index())
         _fac_base_a["Monto_NC"]   = _fac_base_a["N_Factura"].map(nc_by_fac).fillna(0)
         _fac_base_a["Monto_Neto"] = (_fac_base_a["Monto_Factura"] - _fac_base_a["Monto_NC"]).clip(lower=0)
-        _fac_by_oc  = _fac_base_a.groupby("N_OC")["Monto_Neto"].sum()
-        _ocs_fac_mayor_rec = {
-            oc for oc in _fac_by_oc.index
-            if _fac_by_oc.get(oc, 0) > _rec_by_oc.get(oc, 0) + 1000
-        }
-        _n_fac_mayor_rec  = len(_ocs_fac_mayor_rec)
-        _tot_nc_mm        = nc_by_fac.sum() / 1e6 if not nc_by_fac.empty else 0
+        _fac_base_a["Desv_Fac"]   = _fac_base_a["Monto_Neto"] - _fac_base_a["Sum_Rec_Fac"]
+        _invoices_alert    = set(_fac_base_a.loc[_fac_base_a["Desv_Fac"] > 1000, "N_Factura"])
+        _ocs_fac_mayor_rec = set(_fac_base_a.loc[_fac_base_a["Desv_Fac"] > 1000, "N_OC"])
+        _n_fac_mayor_rec   = len(_invoices_alert)
 
         _fc1, _fc2, _ = st.columns([1, 1, 2])
         with _fc1:
@@ -1342,8 +1343,13 @@ with tab_recfac:
             "N° Doc. Recepción","Monto Recibido ($)","Fecha Recepción","Estado Guía","Saldo x Recibir ($)",
             "N° Factura","Monto Factura ($)","Fecha Recep. Factura","Estado Factura","Estado Asociación"
         ]
-        _rf["Alerta"] = _rf["N° OC"].isin(_ocs_fac_mayor_rec).map({True: "⚠ FAC>REC", False: ""})
-        _rf = _rf[["Alerta"] + [c for c in _rf.columns if c != "Alerta"]]
+        # Alerta y desviación a nivel factura (solo en primera aparición de c/ factura)
+        _fac_desv_map  = _fac_base_a.set_index("N_Factura")["Desv_Fac"].to_dict()
+        _rf["Alerta"]  = _rf["N° Factura"].isin(_invoices_alert).map({True: "⚠ FAC>REC", False: ""})
+        _rf["Desv. ($)"] = _rf["N° Factura"].map(_fac_desv_map).fillna(float("nan"))
+        # mostrar Desv. solo en primera fila de cada factura
+        _rf.loc[_rf["N° Factura"].gt(0) & _rf["N° Factura"].duplicated(), "Desv. ($)"] = float("nan")
+        _rf = _rf[["Alerta"] + [c for c in _rf.columns if c not in ("Alerta", "Desv. ($)")] + ["Desv. ($)"]]
 
         if "rf_filtro" not in st.session_state: st.session_state["rf_filtro"] = "todo"
         _rsel = st.session_state.get("rf_filtro", "todo")
@@ -1371,6 +1377,7 @@ with tab_recfac:
                 st.session_state["rf_filtro"] = "fac_mayor_rec"; st.rerun()
 
         _tot_fac_neto_mm = (_fac_base_a["Monto_Neto"].sum() / 1e6) if not _fac_base_a.empty else _tot_fac_mm
+        # _fac_base_a ahora agrupa por N_Factura; _tot_fac_mm sigue siendo el bruto desde _df_fac_k
         st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
         _rk5,_rk6,_rk6b,_rk7,_rk8 = st.columns(5)
         with _rk5: st.markdown(mini_kpi("TOTAL RECIBIDO",    f"MM$ {_tot_rec_mm:,.1f}".replace(".","\x00").replace(",",".").replace("\x00",","), "suma docs recepción"), unsafe_allow_html=True)
@@ -1396,15 +1403,22 @@ with tab_recfac:
         def _row_fac_mayor(row):
             bg = "background-color:rgba(238,102,102,0.13);" if row["Alerta"] == "⚠ FAC>REC" else ""
             return [bg] * len(row)
+        def _color_desv_fac(val):
+            if pd.isna(val) or val == 0: return ""
+            return f"color:{C_CRITICO};font-weight:bold" if val > 0 else f"color:{C_OK};font-weight:bold"
+
         st.dataframe(
             _rf_display.style
                .apply(_row_fac_mayor, axis=1)
                .format({"N° Doc. Recepción":_FI, "N° Factura":_FI,
                         "Monto Recibido ($)":_FS0, "Saldo x Recibir ($)":_FS0,
-                        "Monto Factura ($)":_FS0}, na_rep="-")
+                        "Monto Factura ($)":_FS0,
+                        "Desv. ($)": lambda x: "-" if pd.isna(x) else (f"+${x:,.0f}" if x > 0 else f"${x:,.0f}").replace(".","\x00").replace(",",".").replace("\x00",",")},
+                       na_rep="-")
                .map(color_rec_oc,    subset=["Estado Recepción OC"])
                .map(color_fac,       subset=["Estado Guía","Estado Factura","Estado Asociación"])
-               .map(color_alerta_fac, subset=["Alerta"]),
+               .map(color_alerta_fac, subset=["Alerta"])
+               .map(_color_desv_fac,  subset=["Desv. ($)"]),
             use_container_width=True, hide_index=True
         )
         st.caption(f"{len(_rf_view):,} documentos · {_rf_view['N° OC'].nunique():,} OCs de áridos".replace(".","\x00").replace(",",".").replace("\x00",","))
