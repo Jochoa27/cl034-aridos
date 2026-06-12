@@ -592,13 +592,13 @@ n_cc_criticas     = int((global_cc["Sem_Fin"]=="🔴").sum())
 _saldo_fin        = tot_ppto - tot_oc
 
 if compromiso_pct > 100:
-    _est_txt   = "CRÍTICO";   _est_css = "stat-critico"; _est_color = C_CRITICO
+    _est_txt   = "CRÍTICO";    _est_css = "stat-critico"; _est_color = C_CRITICO
     _est_detail = f"OC supera el presupuesto total · {compromiso_pct:.1f}% comprometido · Exceso MM$ {abs(_saldo_fin)/1e6:,.1f}".replace(".","\x00").replace(",",".").replace("\x00",",")
 elif compromiso_pct >= 95:
-    _est_txt   = "ALTO RIESGO"; _est_css = "stat-riesgo"; _est_color = C_ALERTA
+    _est_txt   = "EN RIESGO";  _est_css = "stat-riesgo";  _est_color = C_ALERTA
     _est_detail = f"Presupuesto casi agotado · {compromiso_pct:.1f}% comprometido · Saldo MM$ {_saldo_fin/1e6:,.1f}".replace(".","\x00").replace(",",".").replace("\x00",",")
 else:
-    _est_txt   = "SANO";      _est_css = "stat-normal";  _est_color = C_OK
+    _est_txt   = "CONTROLADO"; _est_css = "stat-normal";  _est_color = C_OK
     _est_detail = f"{compromiso_pct:.1f}% del presupuesto comprometido · Saldo disponible MM$ {_saldo_fin/1e6:,.1f}".replace(".","\x00").replace(",",".").replace("\x00",",")
 
 # ═════════════════════════════════════════════════════════════════════════════
