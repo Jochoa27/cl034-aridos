@@ -111,6 +111,85 @@ circle.progress { animation: ring-draw 1.5s cubic-bezier(.4,0,.2,1) both; }
 </style>
 """, unsafe_allow_html=True)
 
+# ── TEMAS DE COLOR ────────────────────────────────────────────────────────────
+_AR_THEMES = {
+    "abismo": {
+        "name":"Abismo",  "icon":"🌑", "desc":"Azul marino profundo",
+        "bg_css":"linear-gradient(160deg,#060B15 0%,#08101F 60%,#040910 100%)",
+        "sb_css":"linear-gradient(180deg,#04080E 0%,#060B15 100%)",
+        "bg1":"#060B15", "abr":"56,189,248",
+    },
+    "cosmos": {
+        "name":"Cosmos",  "icon":"🔮", "desc":"Violeta amatista profundo",
+        "bg_css":"linear-gradient(135deg,#130035 0%,#0A001E 55%,#1C0055 100%)",
+        "sb_css":"linear-gradient(180deg,#0D0028 0%,#100030 100%)",
+        "bg1":"#130035", "abr":"168,85,247",
+    },
+    "profundo": {
+        "name":"Profundo", "icon":"🌊", "desc":"Océano azul eléctrico",
+        "bg_css":"linear-gradient(160deg,#001C38 0%,#000E22 55%,#001E44 100%)",
+        "sb_css":"linear-gradient(180deg,#000C1C 0%,#00112A 100%)",
+        "bg1":"#001C38", "abr":"56,189,248",
+    },
+    "selva": {
+        "name":"Selva",   "icon":"🌿", "desc":"Jungla oscura",
+        "bg_css":"linear-gradient(145deg,#002010 0%,#001408 55%,#002818 100%)",
+        "sb_css":"linear-gradient(180deg,#000E08 0%,#001810 100%)",
+        "bg1":"#002010", "abr":"35,209,96",
+    },
+}
+
+_ARTK = st.session_state.get("ar_theme", "abismo")
+_ARTC = _AR_THEMES.get(_ARTK, _AR_THEMES["abismo"])
+_ABR  = _ARTC["abr"]
+
+# Inyectar CSS dinámico: gradiente fondo + sidebar + todos los acentos UI
+st.markdown(f"""<style>
+.stApp{{background:{_ARTC['bg_css']} !important;min-height:100vh;}}
+section[data-testid="stSidebar"]{{
+  background:{_ARTC['sb_css']} !important;
+  border-right:2px solid rgba({_ABR},0.22) !important;
+  box-shadow:4px 0 28px rgba({_ABR},0.08) !important;
+}}
+.sh{{border-bottom:1px solid rgba({_ABR},0.20) !important;}}
+.sh-txt{{text-shadow:0 0 22px rgba({_ABR},0.35) !important;}}
+.kpi-c{{
+  background:linear-gradient(135deg,rgba({_ABR},0.08),rgba({_ABR},0.02)) !important;
+  border-color:rgba({_ABR},0.18) !important;
+}}
+.kpi-c:hover{{border-color:rgba({_ABR},0.42) !important;box-shadow:0 4px 22px rgba({_ABR},0.14) !important;}}
+.mk{{
+  background:linear-gradient(135deg,rgba({_ABR},0.07),rgba({_ABR},0.02)) !important;
+  border-color:rgba({_ABR},0.18) !important;
+}}
+.mk:hover{{border-color:rgba({_ABR},0.34) !important;box-shadow:0 0 22px rgba({_ABR},0.13) !important;}}
+.ring-wrap{{
+  background:linear-gradient(135deg,rgba({_ABR},0.07),rgba({_ABR},0.01)) !important;
+  border-color:rgba({_ABR},0.18) !important;
+}}
+.ring-wrap:hover{{border-color:rgba({_ABR},0.44) !important;box-shadow:0 0 32px rgba({_ABR},0.16) !important;}}
+.proj-card{{
+  background:linear-gradient(135deg,rgba({_ABR},0.07),rgba({_ABR},0.01)) !important;
+  border-color:rgba({_ABR},0.24) !important;
+}}
+.proj-card:hover{{border-color:rgba({_ABR},0.58) !important;box-shadow:0 0 28px rgba({_ABR},0.14) !important;}}
+[data-testid="metric-container"]:hover{{
+  border-color:rgba({_ABR},0.32) !important;
+  box-shadow:0 4px 20px rgba({_ABR},0.12) !important;
+}}
+button[data-baseweb="tab"][aria-selected="true"]{{color:rgb({_ABR}) !important;}}
+section[data-testid="stMain"] [data-testid="stButton"]>button:hover{{
+  border-color:rgba({_ABR},0.38) !important;background:rgba({_ABR},0.08) !important;
+}}
+section[data-testid="stMain"] [data-testid="stButton"]>button[data-testid="baseButton-primary"]{{
+  background:rgba({_ABR},0.15) !important;border:1.5px solid rgb({_ABR}) !important;
+  box-shadow:0 0 22px rgba({_ABR},0.22) !important;
+}}
+[data-testid="stPopover"]>button:hover{{
+  border-color:rgba({_ABR},0.38) !important;background:rgba({_ABR},0.09) !important;
+}}
+</style>""", unsafe_allow_html=True)
+
 # ── SELECTOR MULTI-PROYECTO ───────────────────────────────────────────────────
 _PROJS_ROOT = Path(__file__).parent / "proyectos"
 _TODOS_PROJS = (
@@ -506,6 +585,34 @@ with st.sidebar:
     if st.button("🔄 Actualizar datos", use_container_width=True):
         st.cache_data.clear(); st.rerun()
     st.markdown(f'<div style="font-size:0.68rem;color:#1E293B;margin-top:6px;">⏱ Refresco cada {INTERVALO}s</div>', unsafe_allow_html=True)
+
+    # ── Selector de tema ──────────────────────────────────────────────────────
+    st.divider()
+    _sw = ('<div style="font-size:0.58rem;font-weight:800;letter-spacing:0.16em;'
+           'color:#334155;text-transform:uppercase;margin-bottom:7px;">🎨 TEMA</div>'
+           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;">')
+    for _atk, _atcc in _AR_THEMES.items():
+        _aact = _atk == _ARTK
+        _aring = f"box-shadow:0 0 0 2px rgba({_atcc['abr']},0.85);" if _aact else "border:1px solid rgba(255,255,255,0.07);"
+        _sw += (
+            f'<div style="border-radius:8px;overflow:hidden;cursor:default;{_aring}">'
+            f'<div style="background:{_atcc["bg_css"]};height:26px;display:flex;'
+            f'align-items:center;justify-content:center;font-size:0.9rem;">{_atcc["icon"]}</div>'
+            f'<div style="background:{_atcc["bg1"]};padding:2px 5px;font-size:0.46rem;'
+            f'font-weight:700;color:rgba({_atcc["abr"]},1);letter-spacing:0.04em;">'
+            f'{"✓ " if _aact else ""}{_atcc["name"]}</div></div>'
+        )
+    _sw += '</div>'
+    st.markdown(_sw, unsafe_allow_html=True)
+    _ata, _atb = st.columns(2)
+    for _ati, (_atk, _atcc) in enumerate(_AR_THEMES.items()):
+        _acol = _ata if _ati % 2 == 0 else _atb
+        with _acol:
+            if st.button(f"{'✓ ' if _atk==_ARTK else ''}{_atcc['name']}",
+                         key=f"arth_{_atk}", use_container_width=True, help=_atcc['desc']):
+                st.session_state["ar_theme"] = _atk
+                st.rerun()
+
     if len(_TODOS_PROJS) > 1:
         st.divider()
         st.markdown('<div style="font-size:0.65rem;font-weight:700;letter-spacing:0.13em;color:#475569;text-transform:uppercase;margin-bottom:8px;">🏗️ CAMBIAR PROYECTO</div>', unsafe_allow_html=True)
