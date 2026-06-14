@@ -768,6 +768,246 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# ── Visualizaciones ejecutivas ─────────────────────────────────────────────
+_rec_oc_pct = round(min(100.0, (tot_recibido / tot_oc * 100) if tot_oc > 0 else 0.0), 1)
+_comp_cl    = round(min(100.0, compromiso_pct), 1)
+_ejec_cl    = round(min(100.0, ejec_pct), 1)
+
+st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
+_col_g, _col_d = st.columns([55, 45])
+
+with _col_g:
+    _gauge_opt = {
+        "backgroundColor": "transparent",
+        "animation": True,
+        "animationDuration": 1600,
+        "animationEasing": "cubicOut",
+        "title": {
+            "text": "AVANCE PRESUPUESTARIO",
+            "subtext": "OC  ·  Ejecución  ·  Recibido/OC",
+            "left": "center",
+            "top": "0%",
+            "textStyle": {
+                "color": "#38BDF8",
+                "fontSize": 9,
+                "fontWeight": 700,
+                "letterSpacing": 3,
+            },
+            "subtextStyle": {"color": "#475569", "fontSize": 8},
+        },
+        "graphic": [
+            {
+                "type": "text",
+                "left": "center",
+                "top": "40%",
+                "style": {
+                    "text": _comp_fmt,
+                    "textAlign": "center",
+                    "fill": _est_color,
+                    "fontSize": 26,
+                    "fontWeight": "bold",
+                    "fontFamily": "system-ui, sans-serif",
+                },
+            },
+            {
+                "type": "text",
+                "left": "center",
+                "top": "51%",
+                "style": {
+                    "text": "COMPROMETIDO",
+                    "textAlign": "center",
+                    "fill": "#334155",
+                    "fontSize": 8,
+                    "fontWeight": "bold",
+                    "fontFamily": "system-ui, sans-serif",
+                },
+            },
+        ],
+        "tooltip": {
+            "trigger": "item",
+            "backgroundColor": "rgba(6,11,21,0.97)",
+            "borderColor": "rgba(56,189,248,0.25)",
+            "borderRadius": 10,
+            "textStyle": {"color": "#F1F5F9", "fontSize": 11},
+            "formatter": "{b}: {c}%",
+        },
+        "legend": {
+            "data": [
+                {"name": "OC / PPTO",    "icon": "circle", "itemStyle": {"color": _est_color}},
+                {"name": "Rec / PPTO",   "icon": "circle", "itemStyle": {"color": "#38BDF8"}},
+                {"name": "Rec / OC",     "icon": "circle", "itemStyle": {"color": "#A78BFA"}},
+            ],
+            "bottom": "1%",
+            "left": "center",
+            "textStyle": {"color": "#64748B", "fontSize": 9},
+            "itemWidth": 10,
+            "itemHeight": 6,
+            "selectedMode": False,
+        },
+        "series": [
+            {
+                "name": "OC / PPTO",
+                "type": "gauge",
+                "startAngle": 220,
+                "endAngle": -40,
+                "radius": "87%",
+                "center": ["50%", "54%"],
+                "min": 0,
+                "max": 100,
+                "pointer": {"show": False},
+                "axisTick": {"show": False},
+                "splitLine": {"show": False},
+                "axisLabel": {"show": False},
+                "axisLine": {
+                    "lineStyle": {
+                        "width": 18,
+                        "color": [
+                            [_comp_cl / 100, _est_color],
+                            [1.0, "rgba(255,255,255,0.045)"],
+                        ],
+                    }
+                },
+                "detail": {"show": False},
+                "title": {"show": False},
+                "data": [{"value": _comp_cl, "name": "OC / PPTO"}],
+            },
+            {
+                "name": "Rec / PPTO",
+                "type": "gauge",
+                "startAngle": 220,
+                "endAngle": -40,
+                "radius": "67%",
+                "center": ["50%", "54%"],
+                "min": 0,
+                "max": 100,
+                "pointer": {"show": False},
+                "axisTick": {"show": False},
+                "splitLine": {"show": False},
+                "axisLabel": {"show": False},
+                "axisLine": {
+                    "lineStyle": {
+                        "width": 15,
+                        "color": [
+                            [_ejec_cl / 100, "#38BDF8"],
+                            [1.0, "rgba(255,255,255,0.045)"],
+                        ],
+                    }
+                },
+                "detail": {"show": False},
+                "title": {"show": False},
+                "data": [{"value": _ejec_cl, "name": "Rec / PPTO"}],
+            },
+            {
+                "name": "Rec / OC",
+                "type": "gauge",
+                "startAngle": 220,
+                "endAngle": -40,
+                "radius": "49%",
+                "center": ["50%", "54%"],
+                "min": 0,
+                "max": 100,
+                "pointer": {"show": False},
+                "axisTick": {"show": False},
+                "splitLine": {"show": False},
+                "axisLabel": {"show": False},
+                "axisLine": {
+                    "lineStyle": {
+                        "width": 12,
+                        "color": [
+                            [_rec_oc_pct / 100, "#A78BFA"],
+                            [1.0, "rgba(255,255,255,0.045)"],
+                        ],
+                    }
+                },
+                "detail": {"show": False},
+                "title": {"show": False},
+                "data": [{"value": _rec_oc_pct, "name": "Rec / OC"}],
+            },
+        ],
+    }
+    ec_html(json.dumps(_gauge_opt, ensure_ascii=False), height=360)
+
+with _col_d:
+    _top_cc = (
+        global_cc[global_cc["Monto_OC"] > 0][["CC_Label", "Monto_OC"]]
+        .sort_values("Monto_OC", ascending=False)
+        .head(6)
+    )
+    _otros_oc = float(global_cc["Monto_OC"].sum()) - float(_top_cc["Monto_OC"].sum())
+    _donut_data = [
+        {
+            "name": row["CC_Label"],
+            "value": round(float(row["Monto_OC"]) / 1e6, 2),
+            "itemStyle": {
+                "color": PALETA_CC[i % len(PALETA_CC)],
+                "borderWidth": 2,
+                "borderColor": "#060B15",
+            },
+        }
+        for i, (_, row) in enumerate(_top_cc.iterrows())
+    ]
+    if _otros_oc > 100_000:
+        _donut_data.append({
+            "name": "Otros CC",
+            "value": round(_otros_oc / 1e6, 2),
+            "itemStyle": {"color": "#2D3748", "borderWidth": 2, "borderColor": "#060B15"},
+        })
+    _donut_opt = {
+        "backgroundColor": "transparent",
+        "animation": True,
+        "animationDuration": 1600,
+        "animationEasing": "cubicOut",
+        "title": {
+            "text": "DISTRIBUCIÓN OC POR CC",
+            "subtext": "monto comprometido (MM$)",
+            "left": "center",
+            "top": "0%",
+            "textStyle": {"color": "#38BDF8", "fontSize": 9, "fontWeight": 700},
+            "subtextStyle": {"color": "#475569", "fontSize": 8},
+        },
+        "tooltip": {
+            "trigger": "item",
+            "backgroundColor": "rgba(6,11,21,0.97)",
+            "borderColor": "rgba(56,189,248,0.25)",
+            "borderRadius": 10,
+            "textStyle": {"color": "#F1F5F9", "fontSize": 11},
+            "formatter": "{b}<br/>MM$ {c} &nbsp;·&nbsp; {d}%",
+        },
+        "legend": {
+            "orient": "vertical",
+            "right": "1%",
+            "top": "center",
+            "textStyle": {"color": "#64748B", "fontSize": 9},
+            "itemWidth": 10,
+            "itemHeight": 10,
+        },
+        "series": [
+            {
+                "type": "pie",
+                "radius": ["40%", "70%"],
+                "center": ["38%", "54%"],
+                "avoidLabelOverlap": True,
+                "label": {"show": False},
+                "emphasis": {
+                    "label": {
+                        "show": True,
+                        "fontSize": 11,
+                        "fontWeight": "bold",
+                        "color": "#F1F5F9",
+                        "formatter": "{b}\nMM$ {c}",
+                    },
+                    "itemStyle": {
+                        "shadowBlur": 14,
+                        "shadowColor": "rgba(0,0,0,0.45)",
+                    },
+                },
+                "labelLine": {"show": False},
+                "data": _donut_data,
+            }
+        ],
+    }
+    ec_html(json.dumps(_donut_opt, ensure_ascii=False), height=360)
+
 _n_res = max(len(resumen), 1)
 st.divider()
 
