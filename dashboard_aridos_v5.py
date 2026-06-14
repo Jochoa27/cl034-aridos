@@ -1165,7 +1165,8 @@ def _build_avance_charts(df_grp, label_col):
                         "borderRadius": 12,
                         "textStyle": {"color": "#F1F5F9", "fontSize": 11},
                         "axisPointer": {"type": "shadow",
-                                        "shadowStyle": {"color": "rgba(56,189,248,0.05)"}}},
+                                        "shadowStyle": {"color": "rgba(56,189,248,0.05)"}},
+                        "formatter": "__AVANCE_FORMATTER__"},
             "toolbox": {"feature": {"saveAsImage": {"title": "Guardar"},
                                     "restore": {"title": "Restaurar"}},
                         "iconStyle": {"borderColor": "#475569"}, "right": 5, "top": 5},
@@ -1199,7 +1200,31 @@ def _build_avance_charts(df_grp, label_col):
                  "z": 3, "label": {"show": False}},
             ]
         }
-        return json.dumps(opt, ensure_ascii=False)
+        _u = x_unit.replace("'", "\\'")
+        _fmt = (
+            "function(params){"
+            + f"var u='{_u}';"
+            + "var n=params[0].name,p=0,o=0,r=0;"
+            + "params.forEach(function(s){"
+            + "if(s.seriesName==='Presupuestado')p=s.value;"
+            + "else if(s.seriesName==='OC Efectivo')o=s.value;"
+            + "else if(s.seriesName==='Recibido')r=s.value;"
+            + "});"
+            + "var d=p-o,dc=d>=0?'#23D160':'#FF4757',ds=d>=0?'+':'';"
+            + "var fmt=function(v){return v.toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2});};"
+            + "var h='<div style=\"font-size:11px;color:#F1F5F9;padding:6px 10px;min-width:200px;\">';"
+            + "h+='<div style=\"margin-bottom:6px;font-weight:700;color:#38BDF8;\">'+n+'</div>';"
+            + "h+='<table style=\"width:100%;border-collapse:collapse;\">';"
+            + "h+='<tr><td style=\"color:#94A3B8;\">Presupuestado</td><td style=\"text-align:right;font-weight:600;padding-left:12px;\">'+fmt(p)+' '+u+'</td></tr>';"
+            + "h+='<tr><td style=\"color:#94A3B8;\">OC Efectivo</td><td style=\"text-align:right;font-weight:600;padding-left:12px;\">'+fmt(o)+' '+u+'</td></tr>';"
+            + "h+='<tr><td style=\"color:#94A3B8;\">Recibido</td><td style=\"text-align:right;font-weight:600;padding-left:12px;\">'+fmt(r)+' '+u+'</td></tr>';"
+            + "h+='<tr><td colspan=2 style=\"padding:4px 0;\"><hr style=\"border:0;border-top:1px solid rgba(56,189,248,0.25);\"></td></tr>';"
+            + "h+='<tr><td style=\"color:#CBD5E1;font-weight:700;\">Diferencia PPTO-OC</td><td style=\"text-align:right;font-weight:700;color:'+dc+';padding-left:12px;\">'+ds+fmt(d)+' '+u+'</td></tr>';"
+            + "h+='</table></div>';"
+            + "return h;"
+            + "}"
+        )
+        return json.dumps(opt, ensure_ascii=False).replace('"__AVANCE_FORMATTER__"', _fmt)
 
     _c1, _c2 = st.columns(2)
     with _c1:
